@@ -1,0 +1,13 @@
+{
+  "id": "05",
+  "slug": "level05",
+  "title": "Excavation",
+  "tier": "Beginner",
+  "commands": [
+    "mkdir",
+    "rm",
+    "rmdir"
+  ],
+  "mission": "The storage area 'sandbox/clutter' is full of junk. Locate 'sandbox/clutter/secret_key.txt' (which contains the flag), create the directory 'sandbox/secure_vault', and move the key into it. Run './verify_vault' to complete the mission!",
+  "hint": "Use 'mkdir -p sandbox/secure_vault' to create the vault directory, then move 'sandbox/clutter/secret_key.txt' into it. Read the key with 'cat'."
+}

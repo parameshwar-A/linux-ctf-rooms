@@ -1,0 +1,12 @@
+{
+  "id": "04",
+  "slug": "level04",
+  "title": "Housekeeping",
+  "tier": "Beginner",
+  "commands": [
+    "cp",
+    "mv"
+  ],
+  "mission": "An archive payload was misplaced as 'staging/temp_payload.dat'. Move it to 'production/app_payload.dat', and create a duplicate backup copy at 'backups/app_payload.dat'. Run './check_production' to verify!",
+  "hint": "Use 'mv staging/temp_payload.dat production/app_payload.dat' to move and rename, then 'cp production/app_payload.dat backups/app_payload.dat' to duplicate. Verify with './check_production'."
+}

@@ -1,0 +1,12 @@
+{
+  "id": "08",
+  "slug": "level08",
+  "title": "Head and Shoulders",
+  "tier": "Beginner",
+  "commands": [
+    "head",
+    "tail"
+  ],
+  "mission": "The telemetry stream 'sensor_stream.log' contains 1,000 lines of data. The mission flag is recorded precisely at line 500. Use 'head' and 'tail' to extract line 500!",
+  "hint": "Pipe 'head' into 'tail': 'head -n 500 sensor_stream.log | tail -n 1' to isolate the exact line."
+}

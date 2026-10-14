@@ -1,0 +1,9 @@
+{
+  "id": "02",
+  "slug": "level02",
+  "title": "The Reading Room",
+  "tier": "Beginner",
+  "commands": ["cd", "cat"],
+  "mission": "Navigate into 'archives/classified/2026' and read the secret document. Beware of spaces in filenames!",
+  "hint": "Use 'cd' to change into directories. Wrap filenames with spaces in quotes or escape with a backslash: cat 'top secret document.txt'"
+}

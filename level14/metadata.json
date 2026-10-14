@@ -1,0 +1,12 @@
+{
+  "id": "14",
+  "slug": "level14",
+  "title": "The Vault",
+  "tier": "Beginner",
+  "commands": [
+    "tar",
+    "gzip"
+  ],
+  "mission": "A compressed archive 'classified_vault.tar.gz' has arrived. Decompress and unpack the archive using 'tar' to inspect 'vault_data/credentials.txt' and retrieve the flag!",
+  "hint": "Run 'tar -xzf classified_vault.tar.gz' to decompress and extract the archive contents."
+}

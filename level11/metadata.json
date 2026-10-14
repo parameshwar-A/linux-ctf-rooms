@@ -1,0 +1,11 @@
+{
+  "id": "11",
+  "slug": "level11",
+  "title": "Cipher Shift",
+  "tier": "Beginner",
+  "commands": [
+    "tr"
+  ],
+  "mission": "An intercepted transmission 'intercepted.enc' was scrambled using a classic ROT13 cipher. Decipher the message using 'tr' to reveal the plaintext flag!",
+  "hint": "Use 'tr' to translate character sets: tr 'A-Za-z' 'N-ZA-Mn-za-m' < intercepted.enc."
+}

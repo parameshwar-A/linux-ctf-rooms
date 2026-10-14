@@ -1,0 +1,9 @@
+{
+  "id": "01",
+  "slug": "level01",
+  "title": "The Awakening",
+  "tier": "Beginner",
+  "commands": ["pwd", "ls"],
+  "mission": "Locate the hidden flag (.hidden_flag) concealed in your home directory.",
+  "hint": "Files starting with a '.' are hidden by default. Check 'man ls' to see how to list all files."
+}

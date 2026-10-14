@@ -1,0 +1,8 @@
+FROM linux-ctf-base:latest
+
+USER root
+COPY level03/init.c /tmp/init.c
+RUN gcc -O2 -s /tmp/init.c -o /usr/local/bin/init-room && rm -f /tmp/init.c
+
+WORKDIR /home/learner
+CMD ["/bin/bash"]

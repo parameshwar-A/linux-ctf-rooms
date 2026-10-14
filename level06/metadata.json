@@ -1,0 +1,12 @@
+{
+  "id": "06",
+  "slug": "level06",
+  "title": "Compass and Map",
+  "tier": "Beginner",
+  "commands": [
+    "which",
+    "whereis"
+  ],
+  "mission": "A custom diagnostic binary 'sec-beacon' is installed on the system PATH. Locate it using 'which' or 'whereis', and execute it to extract the beacon key!",
+  "hint": "Run 'which sec-beacon' to display its path, then execute it simply by typing 'sec-beacon'."
+}

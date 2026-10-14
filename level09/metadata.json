@@ -1,0 +1,11 @@
+{
+  "id": "09",
+  "slug": "level09",
+  "title": "By the Numbers",
+  "tier": "Beginner",
+  "commands": [
+    "wc"
+  ],
+  "mission": "The folder 'transcripts/' holds multiple candidate files. The authentic classified debrief has exactly 42 lines. Use 'wc -l' to find the 42-line file and read the flag!",
+  "hint": "Run 'wc -l transcripts/*' to see the line counts of all files. Find the 42-line file, then inspect it with 'cat'."
+}

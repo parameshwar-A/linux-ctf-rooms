@@ -21,8 +21,8 @@ int main(int argc, char *argv[]) {
         fprintf(fenv, "ROOM_ID=\"06\"\n");
         fprintf(fenv, "ROOM_TITLE=\"Compass and Map\"\n");
         fprintf(fenv, "ROOM_COMMANDS=\"which, whereis\"\n");
-        fprintf(fenv, "ROOM_MISSION=\"A diagnostic binary 'sec-beacon' is installed on the system PATH. Locate its installation path using 'whereis', and pass the full path back to 'sec-beacon <PATH>' to authenticate and receive the flag!\"\n");
-        fprintf(fenv, "ROOM_HINT=\"Use 'whereis sec-beacon' to find its full binary location. Then run: sec-beacon <DISCOVERED_PATH>\"\n");
+        fprintf(fenv, "ROOM_MISSION=\"A diagnostic binary 'sec-beacon' is installed on the system. It requires its own installation path as an argument to authenticate. Find where this binary is located on the system and provide the location back to it to get the flag.\"\n");
+        fprintf(fenv, "ROOM_HINT=\"Use manpage -k <keyword> command for keyword based searches, Search the man pages for keywords: locate binary / binary / search path / locate program\"\n");
         fclose(fenv);
         chmod("/etc/linux_ctf_room.env", 0644);
     }
@@ -55,7 +55,7 @@ int main(int argc, char *argv[]) {
             "        printf(\"[-] Authentication Error: Location parameter missing!\\n\");\n"
             "        printf(\"    Usage: sec-beacon <FULL_BINARY_PATH>\\n\\n\");\n"
             "        printf(\"[*] Security requirement: Find where this binary is\\n\");\n"
-            "        printf(\"    installed on the system using 'whereis' or 'which',\\n\");\n"
+            "        printf(\"    installed on the system and pass its full path\\n\");\n"
             "        printf(\"    and pass its absolute path as an argument to authenticate.\\n\");\n"
             "        return 1;\n"
             "    }\n"
@@ -80,7 +80,7 @@ int main(int argc, char *argv[]) {
             "        return 0;\n"
             "    } else {\n"
             "        printf(\"[-] Authentication Failed: '%%s' is NOT the location of this binary!\\n\", argv[1]);\n"
-            "        printf(\"    Use 'whereis sec-beacon' to locate the correct path.\\n\");\n"
+            "        printf(\"    Find the actual binary location on the filesystem and try again.\\n\");\n"
             "        return 1;\n"
             "    }\n"
             "}\n", flag, flag);
@@ -94,7 +94,7 @@ int main(int argc, char *argv[]) {
         fprintf(fn, "Mission Briefing:\n");
         fprintf(fn, "An operational utility 'sec-beacon' has been deployed on this system.\n");
         fprintf(fn, "To prevent unauthorized activation, sec-beacon requires self-location verification.\n\n");
-        fprintf(fn, "1. Locate where 'sec-beacon' is installed on the system using 'whereis'.\n");
+        fprintf(fn, "1. Determine where 'sec-beacon' is installed on the filesystem.\n");
         fprintf(fn, "2. Execute 'sec-beacon <FULL_PATH>' passing the discovered path to authenticate.\n");
         fclose(fn);
         chmod("/home/learner/BRIEFING.txt", 0644);

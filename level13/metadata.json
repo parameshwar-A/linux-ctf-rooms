@@ -7,5 +7,5 @@
     "find"
   ],
   "mission": "The 'storage/' directory contains deeply nested folders and decoy files. Find the file named 'access.key' that has a file size greater than 50 bytes using 'find' to discover the flag!",
-  "hint": "Run 'find storage/ -name \"access.key\" -size +50c' to search by name and size, then 'cat' the matching file."
+  "hint": "Read more and indepth features of find using man find command."
 }

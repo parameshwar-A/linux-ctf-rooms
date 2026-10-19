@@ -8,6 +8,6 @@
     ">",
     ">>"
   ],
-  "mission": "The server launch daemon is awaiting configuration in 'dispatch.conf'. Use 'echo' with redirection ('>' and '>>') to write the required configuration keys. Once completed, execute './verify_dispatch' to reveal your flag!",
-  "hint": "Write 'MODE=ACTIVE' using '>' (overwrites), and 'TARGET=PRODUCTION' using '>>' (appends without overwriting). Check your work with 'cat dispatch.conf'."
+  "mission": "The server launch daemon is awaiting configuration in 'dispatch.conf'. Use a command to write the required configuration keys. Check the instructions file for the configuration keys. Once edited the file, execute './verify_dispatch' to reveal your flag!",
+  "hint": "Check the man page of bash, read it and find if there is anything related to writing output, redirection of data"
 }

@@ -10,5 +10,5 @@
     "uniq"
   ],
   "mission": "Capstone Challenge! Analyze the telemetry file 'network_traffic.csv'. Extract the client IP addresses (column 2), filter by port '443', count occurrences with 'uniq -c', and find the IP with the highest traffic volume. Once identified, run './report_attacker <IP>' to earn the master flag!",
-  "hint": "Build a pipeline: 'grep \",443,\" network_traffic.csv | cut -d\",\" -f2 | sort | uniq -c | sort -nr | head -n 1'. Then execute './report_attacker <IP>'."
+  "hint": "If you came this far, you know what to do! That's right it is in man pages, but this time it won't be a single command, But cocktail of few items so start hacking!"
 }

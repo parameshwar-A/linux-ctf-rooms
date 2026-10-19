@@ -6,6 +6,6 @@
   "commands": [
     "file"
   ],
-  "mission": "Inspect the files inside 'suspects/'. All files have misleading extensions (.png, .mp3, .pdf, .bin, .tar). Exactly one file is an ASCII text file containing the mission flag. Use 'file' to discover it!",
-  "hint": "Run 'file suspects/*' to analyze file signatures. Identify the ASCII text file and view it with 'cat'."
+  "mission": "Inspect the files inside 'suspects/'. Files inside the suspects have wrong extensions added. All files have misleading extensions (.png, .mp3, .pdf, .bin, .tar). Exactly one file is an ASCII text file containing the mission flag. Find a way to detect the actual type of the file rather than the file extension.",
+  "hint": "Use manpage -k <keyword> command for keyword based searches, Search the man pages for keywords: file type / file / determining file content type"
 }

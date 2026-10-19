@@ -7,5 +7,5 @@
     "grep"
   ],
   "mission": "The 'logs/' directory contains dozens of access logs with thousands of web requests. Find the suspicious entry tagged with error code 'ERR_LEAK_9918' and extract the leaked flag!",
-  "hint": "Use 'grep -rn \"ERR_LEAK_9918\" logs/' to recursively search all log files and display line numbers."
+  "hint": "Find a command which can help us to search through files. Use manpage -k <keyword> command for keyword based searches, Search the man pages for keywords: search for patterns / match pattern / search"
 }

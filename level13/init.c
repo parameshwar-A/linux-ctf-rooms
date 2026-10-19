@@ -21,8 +21,8 @@ int main(int argc, char *argv[]) {
         fprintf(fenv, "ROOM_ID=\"13\"\n");
         fprintf(fenv, "ROOM_TITLE=\"Needle in the Haystack\"\n");
         fprintf(fenv, "ROOM_COMMANDS=\"find\"\n");
-        fprintf(fenv, "ROOM_MISSION=\"Find 'access.key' with size greater than 50 bytes in 'storage/' using 'find'!\"\n");
-        fprintf(fenv, "ROOM_HINT=\"Run 'find storage/ -name \"access.key\" -size +50c' then inspect the file.\"\n");
+        fprintf(fenv, "ROOM_MISSION=\"The 'storage/' directory contains deeply nested folders and decoy files. Find the file named 'access.key' that has a file size greater than 50 bytes using 'find' to discover the flag!\"\n");
+        fprintf(fenv, "ROOM_HINT=\"Read more and indepth features of find using man find command.\"\n");
         fclose(fenv);
         chmod("/etc/linux_ctf_room.env", 0644);
     }

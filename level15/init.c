@@ -21,8 +21,8 @@ int main(int argc, char *argv[]) {
         fprintf(fenv, "ROOM_ID=\"15\"\n");
         fprintf(fenv, "ROOM_TITLE=\"Master of the Shell\"\n");
         fprintf(fenv, "ROOM_COMMANDS=\"|, cut, sort, uniq, grep\"\n");
-        fprintf(fenv, "ROOM_MISSION=\"Analyze 'network_traffic.csv', identify the highest volume IP on port 443, and run './report_attacker <IP>'!\"\n");
-        fprintf(fenv, "ROOM_HINT=\"Combine pipelines: grep ',443,' network_traffic.csv | cut -d',' -f2 | sort | uniq -c | sort -nr | head -n 1\"\n");
+        fprintf(fenv, "ROOM_MISSION=\"Capstone Challenge! Analyze the telemetry file 'network_traffic.csv'. Extract the client IP addresses (column 2), filter by port '443', count occurrences with 'uniq -c', and find the IP with the highest traffic volume. Once identified, run './report_attacker <IP>' to earn the master flag!\"\n");
+        fprintf(fenv, "ROOM_HINT=\"If you came this far, you know what to do! That's right it is in man pages, but this time it won't be a single command, But cocktail of few items so start hacking!\"\n");
         fclose(fenv);
         chmod("/etc/linux_ctf_room.env", 0644);
     }

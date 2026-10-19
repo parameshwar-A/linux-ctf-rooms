@@ -32,8 +32,8 @@ int main(int argc, char *argv[]) {
         fprintf(fenv, "ROOM_ID=\"11\"\n");
         fprintf(fenv, "ROOM_TITLE=\"Cipher Shift\"\n");
         fprintf(fenv, "ROOM_COMMANDS=\"tr\"\n");
-        fprintf(fenv, "ROOM_MISSION=\"Decipher 'intercepted.enc' using 'tr' (ROT13) to read the plaintext flag!\"\n");
-        fprintf(fenv, "ROOM_HINT=\"Run: tr 'A-Za-z' 'N-ZA-Mn-za-m' < intercepted.enc\"\n");
+        fprintf(fenv, "ROOM_MISSION=\"An intercepted transmission 'intercepted.enc' was scrambled using a classic ROT13 cipher. Decipher the message using 'tr' to reveal the plaintext flag!\"\n");
+        fprintf(fenv, "ROOM_HINT=\"Ensure to read more about ROT13 and then try how can we use the tr command through man tr.\"\n");
         fclose(fenv);
         chmod("/etc/linux_ctf_room.env", 0644);
     }

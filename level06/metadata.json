@@ -7,6 +7,6 @@
     "which",
     "whereis"
   ],
-  "mission": "A custom diagnostic binary 'sec-beacon' is installed on the system PATH. Locate it using 'which' or 'whereis', and execute it to extract the beacon key!",
-  "hint": "Run 'which sec-beacon' to display its path, then execute it simply by typing 'sec-beacon'."
+  "mission": "A custom diagnostic binary 'sec-beacon' is installed on the system PATH. Your task is to find the location of the file. Normal files we can use find command, but for the installed files or executables path there is another commadn find that from man pages",
+  "hint": "Use manpage -k <keyword> command for keyword based searches, Search the man pages for keywords: full path / executable path"
 }

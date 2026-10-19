@@ -21,8 +21,8 @@ int main(int argc, char *argv[]) {
         fprintf(fenv, "ROOM_ID=\"06\"\n");
         fprintf(fenv, "ROOM_TITLE=\"Compass and Map\"\n");
         fprintf(fenv, "ROOM_COMMANDS=\"which, whereis\"\n");
-        fprintf(fenv, "ROOM_MISSION=\"A binary named 'sec-beacon' is installed on the PATH. Find its location and run it to get the flag!\"\n");
-        fprintf(fenv, "ROOM_HINT=\"Use 'which sec-beacon' to discover its path, then execute it: 'sec-beacon'.\"\n");
+        fprintf(fenv, "ROOM_MISSION=\"A custom diagnostic binary 'sec-beacon' is installed on the system PATH. Your task is to find the location of the file. Normal files we can use find command, but for the installed files or executables path there is another commadn find that from man pages\"\n");
+        fprintf(fenv, "ROOM_HINT=\"Use manpage -k <keyword> command for keyword based searches, Search the man pages for keywords: full path / executable path\"\n");
         fclose(fenv);
         chmod("/etc/linux_ctf_room.env", 0644);
     }

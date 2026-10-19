@@ -8,5 +8,5 @@
     "gzip"
   ],
   "mission": "A compressed archive 'classified_vault.tar.gz' has arrived. Decompress and unpack the archive using 'tar' to inspect 'vault_data/credentials.txt' and retrieve the flag!",
-  "hint": "Run 'tar -xzf classified_vault.tar.gz' to decompress and extract the archive contents."
+  "hint": "Read more about tar command using the man tar command. Just read you will figure it out!"
 }

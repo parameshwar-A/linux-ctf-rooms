@@ -7,6 +7,6 @@
     "sort",
     "uniq"
   ],
-  "mission": "The file 'transaction_hashes.txt' contains 200 transaction tokens with duplicates. Exactly one token is unique without any duplicate. Use 'sort' and 'uniq -u' to filter out duplicates and isolate the flag!",
-  "hint": "Sort the file before deduplication: 'sort transaction_hashes.txt | uniq -u'."
+  "mission": "The file 'transaction_hashes.txt' contains 200 transaction tokens with duplicates. Exactly one token is unique without any duplicate. Find a command which helps to identify the duplicates and use that to identify the proper token.",
+  "hint": "Use manpage -k <keyword> command for keyword based searches, Search the man pages for keywords: repeated lines / report  lines / sort"
 }

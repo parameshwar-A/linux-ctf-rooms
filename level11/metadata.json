@@ -7,5 +7,5 @@
     "tr"
   ],
   "mission": "An intercepted transmission 'intercepted.enc' was scrambled using a classic ROT13 cipher. Decipher the message using 'tr' to reveal the plaintext flag!",
-  "hint": "Use 'tr' to translate character sets: tr 'A-Za-z' 'N-ZA-Mn-za-m' < intercepted.enc."
+  "hint": "Ensure to read more about ROT13 and then try how can we use the tr command through man tr."
 }

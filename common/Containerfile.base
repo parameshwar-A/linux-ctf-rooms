@@ -5,10 +5,12 @@ FROM debian:bookworm-slim
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TERM=xterm-256color
 
-# Install GNU core utilities, man pages, documentation, text utilities, and build tools
+# 1. Un-minimize Debian: remove dpkg exclusions so manual pages are preserved
+RUN rm -f /etc/dpkg/dpkg.cfg.d/docker /etc/dpkg/dpkg.cfg.d/excludes
+
+# 2. Install documentation utilities, compiler tools, and reinstall base utilities to unpack their man pages
 RUN apt-get update && apt-get install -y --no-install-recommends \
     bash \
-    coreutils \
     man-db \
     manpages \
     manpages-dev \
@@ -20,14 +22,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     procps \
     tree \
     ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
-
-# Restore man pages (Debian slim excludes them by default via dpkg excludes)
-RUN rm -f /etc/dpkg/dpkg.cfg.d/excludes || true
-RUN apt-get update && apt-get install -y --reinstall \
-    man-db \
-    manpages \
+    && apt-get install -y --reinstall \
     coreutils \
+    findutils \
+    grep \
+    tar \
+    gzip \
+    sed \
+    diffutils \
     && rm -rf /var/lib/apt/lists/* \
     && mandb -c
 
@@ -37,7 +39,9 @@ RUN useradd -m -s /bin/bash learner
 # Copy common assets
 COPY common/validator/submit_flag.c /opt/linux_ctf/submit_flag.c
 COPY common/scripts/motd_banner.sh /usr/local/bin/motd_banner
-RUN chmod 755 /usr/local/bin/motd_banner
+COPY common/scripts/hint.sh /usr/local/bin/hint
+RUN chmod 755 /usr/local/bin/motd_banner /usr/local/bin/hint \
+    && ln -sf /usr/local/bin/hint /usr/local/bin/show-hint
 
 # Setup global bashrc hook so MOTD prints on shell start
 RUN echo 'if [ -f /usr/local/bin/motd_banner ]; then /usr/local/bin/motd_banner; fi' >> /etc/bash.bashrc \

@@ -21,8 +21,8 @@ int main(int argc, char *argv[]) {
         fprintf(fenv, "ROOM_ID=\"03\"\n");
         fprintf(fenv, "ROOM_TITLE=\"Ink and Paper\"\n");
         fprintf(fenv, "ROOM_COMMANDS=\"echo, >, >>\"\n");
-        fprintf(fenv, "ROOM_MISSION=\"Configure 'dispatch.conf' with 'MODE=ACTIVE' and 'TARGET=PRODUCTION' using redirection. Then run './verify_dispatch' to unlock the flag!\"\n");
-        fprintf(fenv, "ROOM_HINT=\"Use 'echo \"MODE=ACTIVE\" > dispatch.conf' followed by 'echo \"TARGET=PRODUCTION\" >> dispatch.conf'. Check with 'cat dispatch.conf'.\"\n");
+        fprintf(fenv, "ROOM_MISSION=\"The server launch daemon is awaiting configuration in 'dispatch.conf'. Use a command to write the required configuration keys. Check the instructions file for the configuration keys. Once edited the file, execute './verify_dispatch' to reveal your flag!\"\n");
+        fprintf(fenv, "ROOM_HINT=\"Check the man page of bash, read it and find if there is anything related to writing output, redirection of data\"\n");
         fclose(fenv);
         chmod("/etc/linux_ctf_room.env", 0644);
     }

@@ -21,8 +21,8 @@ int main(int argc, char *argv[]) {
         fprintf(fenv, "ROOM_ID=\"10\"\n");
         fprintf(fenv, "ROOM_TITLE=\"The Lone Survivor\"\n");
         fprintf(fenv, "ROOM_COMMANDS=\"sort, uniq\"\n");
-        fprintf(fenv, "ROOM_MISSION=\"Find the single unique transaction token in 'transaction_hashes.txt' using 'sort' and 'uniq -u'!\"\n");
-        fprintf(fenv, "ROOM_HINT=\"Run 'sort transaction_hashes.txt | uniq -u' to isolate the unique flag.\"\n");
+        fprintf(fenv, "ROOM_MISSION=\"The file 'transaction_hashes.txt' contains 200 transaction tokens with duplicates. Exactly one token is unique without any duplicate. Find a command which helps to identify the duplicates and use that to identify the proper token.\"\n");
+        fprintf(fenv, "ROOM_HINT=\"Use manpage -k <keyword> command for keyword based searches, Search the man pages for keywords: repeated lines / report  lines / sort\"\n");
         fclose(fenv);
         chmod("/etc/linux_ctf_room.env", 0644);
     }

@@ -21,8 +21,8 @@ int main(int argc, char *argv[]) {
         fprintf(fenv, "ROOM_ID=\"01\"\n");
         fprintf(fenv, "ROOM_TITLE=\"The Awakening\"\n");
         fprintf(fenv, "ROOM_COMMANDS=\"pwd, ls\"\n");
-        fprintf(fenv, "ROOM_MISSION=\"Locate the hidden flag (.hidden_flag) concealed in your home directory.\"\n");
-        fprintf(fenv, "ROOM_HINT=\"Files starting with a '.' are hidden by default. Check 'man ls' to see how to list all files.\"\n");
+        fprintf(fenv, "ROOM_MISSION=\"The flag is in a hidden files in your home directory. Find a way to see the hidden file and fetch the flag.\"\n");
+        fprintf(fenv, "ROOM_HINT=\"Read the man page for ls command like this: man ls. Read it and you will find the answer!\"\n");
         fclose(fenv);
         chmod("/etc/linux_ctf_room.env", 0644);
     }

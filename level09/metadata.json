@@ -6,6 +6,6 @@
   "commands": [
     "wc"
   ],
-  "mission": "The folder 'transcripts/' holds multiple candidate files. The authentic classified debrief has exactly 42 lines. Use 'wc -l' to find the 42-line file and read the flag!",
-  "hint": "Run 'wc -l transcripts/*' to see the line counts of all files. Find the 42-line file, then inspect it with 'cat'."
+  "mission": "The folder 'transcripts/' holds multiple candidate files. The authentic classified debrief has exactly 42 lines. There is a tool called wc which can do some word and file related checks. Read the man page for that and find the actual file which has 42 lines.",
+  "hint": "Visit man page of 'wc' command, check for available option related to line counts"
 }

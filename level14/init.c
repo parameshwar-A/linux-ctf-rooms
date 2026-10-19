@@ -21,8 +21,8 @@ int main(int argc, char *argv[]) {
         fprintf(fenv, "ROOM_ID=\"14\"\n");
         fprintf(fenv, "ROOM_TITLE=\"The Vault\"\n");
         fprintf(fenv, "ROOM_COMMANDS=\"tar, gzip\"\n");
-        fprintf(fenv, "ROOM_MISSION=\"Extract 'classified_vault.tar.gz' using 'tar -xzf' to uncover the flag inside!\"\n");
-        fprintf(fenv, "ROOM_HINT=\"Run 'tar -xzf classified_vault.tar.gz' then read 'vault_data/credentials.txt'.\"\n");
+        fprintf(fenv, "ROOM_MISSION=\"A compressed archive 'classified_vault.tar.gz' has arrived. Decompress and unpack the archive using 'tar' to inspect 'vault_data/credentials.txt' and retrieve the flag!\"\n");
+        fprintf(fenv, "ROOM_HINT=\"Read more about tar command using the man tar command. Just read you will figure it out!\"\n");
         fclose(fenv);
         chmod("/etc/linux_ctf_room.env", 0644);
     }

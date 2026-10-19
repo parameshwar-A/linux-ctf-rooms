@@ -21,8 +21,8 @@ int main(int argc, char *argv[]) {
         fprintf(fenv, "ROOM_ID=\"09\"\n");
         fprintf(fenv, "ROOM_TITLE=\"By the Numbers\"\n");
         fprintf(fenv, "ROOM_COMMANDS=\"wc\"\n");
-        fprintf(fenv, "ROOM_MISSION=\"One file in 'transcripts/' contains exactly 42 lines. Find it using 'wc -l' and extract the flag!\"\n");
-        fprintf(fenv, "ROOM_HINT=\"Run 'wc -l transcripts/*' to count lines, identify the 42-line file, and read it with 'cat'.\"\n");
+        fprintf(fenv, "ROOM_MISSION=\"The folder 'transcripts/' holds multiple candidate files. The authentic classified debrief has exactly 42 lines. There is a tool called wc which can do some word and file related checks. Read the man page for that and find the actual file which has 42 lines.\"\n");
+        fprintf(fenv, "ROOM_HINT=\"Visit man page of 'wc' command, check for available option related to line counts\"\n");
         fclose(fenv);
         chmod("/etc/linux_ctf_room.env", 0644);
     }

@@ -21,8 +21,8 @@ int main(int argc, char *argv[]) {
         fprintf(fenv, "ROOM_ID=\"05\"\n");
         fprintf(fenv, "ROOM_TITLE=\"Excavation\"\n");
         fprintf(fenv, "ROOM_COMMANDS=\"mkdir, rm, rmdir\"\n");
-        fprintf(fenv, "ROOM_MISSION=\"Excavate 'sandbox/clutter', find 'secret_key.txt', create directory 'sandbox/secure_vault', and move the key into it. Then run './verify_vault'!\"\n");
-        fprintf(fenv, "ROOM_HINT=\"Use 'mkdir sandbox/secure_vault', then move the secret key into it. Read the key with 'cat'.\"\n");
+        fprintf(fenv, "ROOM_MISSION=\"The storage area 'sandbox/clutter' is full of junk. Locate 'sandbox/clutter/secret_*.txt' (which contains the flag), create the directory 'sandbox/secure_vault', and move the key into it. Run './verify_vault' to complete the mission!\"\n");
+        fprintf(fenv, "ROOM_HINT=\"Use manpage -k <keyword> command for keyword based searches, Search man pages for keywords like directories / make / remove\"\n");
         fclose(fenv);
         chmod("/etc/linux_ctf_room.env", 0644);
     }

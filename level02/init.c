@@ -21,8 +21,8 @@ int main(int argc, char *argv[]) {
         fprintf(fenv, "ROOM_ID=\"02\"\n");
         fprintf(fenv, "ROOM_TITLE=\"The Reading Room\"\n");
         fprintf(fenv, "ROOM_COMMANDS=\"cd, cat\"\n");
-        fprintf(fenv, "ROOM_MISSION=\"Navigate into 'archives/classified/2026' and read the secret document. Beware of spaces in filenames!\"\n");
-        fprintf(fenv, "ROOM_HINT=\"Use 'cd' to change into directories. Wrap filenames with spaces in quotes or escape with a backslash: cat 'top secret document.txt'\"\n");
+        fprintf(fenv, "ROOM_MISSION=\"Navigate into 'archives/classified/2026' and read the secret document.\"\n");
+        fprintf(fenv, "ROOM_HINT=\"Use manpage -k 'keyword' command for keyword based searches, Search for keywords like changing directories/ printing contents / standard output\"\n");
         fclose(fenv);
         chmod("/etc/linux_ctf_room.env", 0644);
     }

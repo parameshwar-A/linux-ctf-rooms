@@ -21,8 +21,8 @@ int main(int argc, char *argv[]) {
         fprintf(fenv, "ROOM_ID=\"08\"\n");
         fprintf(fenv, "ROOM_TITLE=\"Head and Shoulders\"\n");
         fprintf(fenv, "ROOM_COMMANDS=\"head, tail\"\n");
-        fprintf(fenv, "ROOM_MISSION=\"Extract the secret recorded precisely at line 500 of 'sensor_stream.log' using 'head' and 'tail'!\"\n");
-        fprintf(fenv, "ROOM_HINT=\"Run 'head -n 500 sensor_stream.log | tail -n 1' to isolate line 500.\"\n");
+        fprintf(fenv, "ROOM_MISSION=\"The telemetry stream 'sensor_stream.log' contains 1,000 lines of data. The mission flag is recorded precisely at line 500. Use any commands but we recommend to use 'head' and 'tail' to extract line 500!\"\n");
+        fprintf(fenv, "ROOM_HINT=\"Feed the output from head back to tail and do some combined processing. Try reading the bash to see if they have any way to link output of one command to another. Use that\"\n");
         fclose(fenv);
         chmod("/etc/linux_ctf_room.env", 0644);
     }

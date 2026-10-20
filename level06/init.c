@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
         fprintf(fenv, "ROOM_TITLE=\"Compass and Map\"\n");
         fprintf(fenv, "ROOM_COMMANDS=\"which, whereis\"\n");
         fprintf(fenv, "ROOM_MISSION=\"A diagnostic binary 'sec-beacon' is installed on the system. It requires its own installation path as an argument to authenticate. Find where this binary is located on the system and provide the location back to it to get the flag.\"\n");
-        fprintf(fenv, "ROOM_HINT=\"Use manpage -k <keyword> command for keyword based searches, Search the man pages for keywords: locate binary / binary / search path / locate program\"\n");
+        fprintf(fenv, "ROOM_HINT=\"Use 'man -k <keyword>' for keyword based searches. Search the man pages for keywords like: locate binary / binary / search path / locate program\"\n");
         fclose(fenv);
         chmod("/etc/linux_ctf_room.env", 0644);
     }

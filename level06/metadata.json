@@ -8,5 +8,5 @@
     "whereis"
   ],
   "mission": "A diagnostic binary 'sec-beacon' is installed on the system. It requires its own installation path as an argument to authenticate. Find where this binary is located on the system and provide the location back to it to get the flag.",
-  "hint": "Use manpage -k <keyword> command for keyword based searches, Search the man pages for keywords: locate binary / binary / search path / locate program"
+  "hint": "Use 'man -k <keyword>' for keyword based searches. Search the man pages for keywords like: locate binary / binary / search path / locate program"
 }

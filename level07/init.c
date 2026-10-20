@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
         fprintf(fenv, "ROOM_TITLE=\"Disguised Identities\"\n");
         fprintf(fenv, "ROOM_COMMANDS=\"file\"\n");
         fprintf(fenv, "ROOM_MISSION=\"Inspect the files inside 'suspects/'. Files inside the suspects have wrong extensions added. All files have misleading extensions (.png, .mp3, .pdf, .bin, .tar). Exactly one file is an ASCII text file containing the mission flag. Find a way to detect the actual type of the file rather than the file extension.\"\n");
-        fprintf(fenv, "ROOM_HINT=\"Use manpage -k <keyword> command for keyword based searches, Search the man pages for keywords: file type / file / determining file content type\"\n");
+        fprintf(fenv, "ROOM_HINT=\"Use 'man -k <keyword>' for keyword based searches. Search the man pages for keywords like: file type / file / determining file content type\"\n");
         fclose(fenv);
         chmod("/etc/linux_ctf_room.env", 0644);
     }

@@ -8,5 +8,5 @@
     "cat"
   ],
   "mission": "Navigate into 'archives/classified/2026' and read the secret document.",
-  "hint": "Use manpage -k 'keyword' command for keyword based searches, Search for keywords like changing directories/ printing contents / standard output"
+  "hint": "Use 'man -k <keyword>' for keyword based searches. Search for keywords like changing directories / printing contents / standard output"
 }

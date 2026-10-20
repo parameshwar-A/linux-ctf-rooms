@@ -8,5 +8,5 @@
     "mv"
   ],
   "mission": "An archive payload was misplaced as 'staging/temp_payload.dat'. Move it to 'production/app_payload.dat', and create a duplicate backup copy at 'backups/app_payload.dat'. Run './check_production' to verify!",
-  "hint": "Use manpage -k <keyword> command for keyword based searches, Search manpages for keywords like copy files / copy / move files"
+  "hint": "Use 'man -k <keyword>' for keyword based searches. Search man pages for keywords like copy files / copy / move files"
 }

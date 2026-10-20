@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
         fprintf(fenv, "ROOM_TITLE=\"Housekeeping\"\n");
         fprintf(fenv, "ROOM_COMMANDS=\"cp, mv\"\n");
         fprintf(fenv, "ROOM_MISSION=\"An archive payload was misplaced as 'staging/temp_payload.dat'. Move it to 'production/app_payload.dat', and create a duplicate backup copy at 'backups/app_payload.dat'. Run './check_production' to verify!\"\n");
-        fprintf(fenv, "ROOM_HINT=\"Use manpage -k <keyword> command for keyword based searches, Search manpages for keywords like copy files / copy / move files\"\n");
+        fprintf(fenv, "ROOM_HINT=\"Use 'man -k <keyword>' for keyword based searches. Search man pages for keywords like copy files / copy / move files\"\n");
         fclose(fenv);
         chmod("/etc/linux_ctf_room.env", 0644);
     }

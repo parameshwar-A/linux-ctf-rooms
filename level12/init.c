@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
         fprintf(fenv, "ROOM_TITLE=\"The Log Whisperer\"\n");
         fprintf(fenv, "ROOM_COMMANDS=\"grep\"\n");
         fprintf(fenv, "ROOM_MISSION=\"The 'logs/' directory contains dozens of access logs with thousands of web requests. Find the suspicious entry tagged with error code 'ERR_LEAK_9918' and extract the leaked flag!\"\n");
-        fprintf(fenv, "ROOM_HINT=\"Find a command which can help us to search through files. Use manpage -k <keyword> command for keyword based searches, Search the man pages for keywords: search for patterns / match pattern / search\"\n");
+        fprintf(fenv, "ROOM_HINT=\"Find a command which can help us to search through files. Use 'man -k <keyword>' for keyword based searches. Search the man pages for keywords like: search for patterns / match pattern / search\"\n");
         fclose(fenv);
         chmod("/etc/linux_ctf_room.env", 0644);
     }

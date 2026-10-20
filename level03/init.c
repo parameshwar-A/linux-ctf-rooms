@@ -47,7 +47,8 @@ int main(int argc, char *argv[]) {
         fprintf(fn, "The dispatch daemon requires 'dispatch.conf' with exactly:\n\n");
         fprintf(fn, "Line 1: MODE=ACTIVE\n");
         fprintf(fn, "Line 2: TARGET=PRODUCTION\n\n");
-        fprintf(fn, "Use 'echo' with '>' (overwrite) and '>>' (append).\n");
+        fprintf(fn, "Write the required configuration keys into 'dispatch.conf'.\n");
+        fprintf(fn, "Ensure both lines are present and exact.\n");
         fprintf(fn, "Once ready, execute: ./verify_dispatch\n");
         fclose(fn);
         chmod("/home/learner/INSTRUCTIONS.txt", 0644);
@@ -62,7 +63,7 @@ int main(int argc, char *argv[]) {
             "int main() {\n"
             "    FILE *f = fopen(\"dispatch.conf\", \"r\");\n"
             "    if (!f) {\n"
-            "        printf(\"[-] 'dispatch.conf' not found! Create it using echo and redirection.\\n\");\n"
+            "        printf(\"[-] 'dispatch.conf' not found! Please create the configuration file first.\\n\");\n"
             "        return 1;\n"
             "    }\n"
             "    char l1[128] = {0}, l2[128] = {0};\n"

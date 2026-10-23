@@ -7,13 +7,11 @@
 #include <string.h>
 
 int main(int argc, char *argv[]) {
-    if (argc < 4) {
-        fprintf(stderr, "[-] Missing session parameters\n");
+    if (argc < 2) {
+        fprintf(stderr, "[-] Missing flag parameter\n");
         return 1;
     }
     const char *flag = argv[1];
-    const char *salt = argv[2];
-    const char *hash = argv[3];
 
     /* 1. Setup MOTD room environment config */
     FILE *fenv = fopen("/etc/linux_ctf_room.env", "w");
@@ -27,18 +25,7 @@ int main(int argc, char *argv[]) {
         chmod("/etc/linux_ctf_room.env", 0644);
     }
 
-    /* 2. Compile hardened submit-flag binary (~70ms) */
-    char compile_cmd[1024];
-    snprintf(compile_cmd, sizeof(compile_cmd),
-        "gcc -O2 -s -DEXPECTED_HASH='\"%s\"' -DSALT='\"%s\"' -DROOM_NAME='\"Level 02 - The Reading Room\"' "
-        "/opt/linux_ctf/submit_flag.c -o /usr/local/bin/submit-flag",
-        hash, salt);
-    if (system(compile_cmd) != 0) {
-        fprintf(stderr, "[-] Failed to compile validator\n");
-    }
-    chmod("/usr/local/bin/submit-flag", 0755);
-
-    /* 3. Setup puzzle layout */
+    /* 2. Setup puzzle layout */
     mkdir("/home/learner/archives", 0755);
     mkdir("/home/learner/archives/classified", 0755);
     mkdir("/home/learner/archives/classified/2026", 0755);
@@ -59,9 +46,6 @@ int main(int argc, char *argv[]) {
         fclose(fs);
         chmod(secret_path, 0644);
     }
-
-    /* Set ownership */
-    system("chown -R learner:learner /home/learner");
 
     return 0;
 }

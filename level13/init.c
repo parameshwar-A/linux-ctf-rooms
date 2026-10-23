@@ -7,13 +7,11 @@
 #include <string.h>
 
 int main(int argc, char *argv[]) {
-    if (argc < 4) {
-        fprintf(stderr, "[-] Missing session parameters\n");
+    if (argc < 2) {
+        fprintf(stderr, "[-] Missing flag parameter\n");
         return 1;
     }
     const char *flag = argv[1];
-    const char *salt = argv[2];
-    const char *hash = argv[3];
 
     /* 1. Setup MOTD room environment config */
     FILE *fenv = fopen("/etc/linux_ctf_room.env", "w");
@@ -27,29 +25,39 @@ int main(int argc, char *argv[]) {
         chmod("/etc/linux_ctf_room.env", 0644);
     }
 
-    /* 2. Compile hardened submit-flag binary */
-    char compile_cmd[1024];
-    snprintf(compile_cmd, sizeof(compile_cmd),
-        "gcc -O2 -s -DEXPECTED_HASH='\"%s\"' -DSALT='\"%s\"' -DROOM_NAME='\"Level 13 - Needle in the Haystack\"' "
-        "/opt/linux_ctf/submit_flag.c -o /usr/local/bin/submit-flag",
-        hash, salt);
-    if (system(compile_cmd) != 0) {
-        fprintf(stderr, "[-] Failed to compile validator\n");
+    /* 2. Setup nested directories */
+    mkdir("/home/learner/storage", 0755);
+    mkdir("/home/learner/storage/vol1", 0755);
+    mkdir("/home/learner/storage/vol1/dept_a", 0755);
+    mkdir("/home/learner/storage/vol1/dept_a/node1", 0755);
+    mkdir("/home/learner/storage/vol1/dept_b", 0755);
+    mkdir("/home/learner/storage/vol1/dept_b/node2", 0755);
+    mkdir("/home/learner/storage/vol2", 0755);
+    mkdir("/home/learner/storage/vol2/secure", 0755);
+    mkdir("/home/learner/storage/vol2/secure/keys", 0755);
+    mkdir("/home/learner/storage/vol3", 0755);
+    mkdir("/home/learner/storage/vol3/archive", 0755);
+    mkdir("/home/learner/storage/vol3/archive/raw", 0755);
+
+    /* Record decoys in /run/ctf/decoys */
+    FILE *fdec = fopen("/run/ctf/decoys", "w");
+    if (fdec) {
+        fprintf(fdec, "FLAG{l13_decoy_k1}\n");
+        fprintf(fdec, "FLAG{l13_decoy_k2}\n");
+        fclose(fdec);
     }
-    chmod("/usr/local/bin/submit-flag", 0755);
 
-    /* 3. Setup nested directories */
-    system("mkdir -p /home/learner/storage/vol1/dept_a/node1");
-    system("mkdir -p /home/learner/storage/vol1/dept_b/node2");
-    system("mkdir -p /home/learner/storage/vol2/secure/keys");
-    system("mkdir -p /home/learner/storage/vol3/archive/raw");
+    /* Small decoy keys (all strictly under 50 bytes) */
+    FILE *d1 = fopen("/home/learner/storage/vol1/dept_a/node1/access.key", "w");
+    if (d1) { fprintf(d1, "FLAG{l13_decoy_k1}\n"); fclose(d1); chmod("/home/learner/storage/vol1/dept_a/node1/access.key", 0644); }
 
-    /* Empty decoy keys (0 bytes or 10 bytes) */
-    system("touch /home/learner/storage/vol1/dept_a/node1/access.key");
-    system("echo 'EMPTY' > /home/learner/storage/vol1/dept_b/node2/access.key");
-    system("echo 'DUMMY KEY' > /home/learner/storage/vol3/archive/raw/access.key");
+    FILE *d2 = fopen("/home/learner/storage/vol1/dept_b/node2/access.key", "w");
+    if (d2) { fprintf(d2, "KEY: FLAG{l13_decoy_k2}\n"); fclose(d2); chmod("/home/learner/storage/vol1/dept_b/node2/access.key", 0644); }
 
-    /* True key with size > 50 bytes holding the flag */
+    FILE *d3 = fopen("/home/learner/storage/vol3/archive/raw/access.key", "w");
+    if (d3) { fprintf(d3, "EMPTY\n"); fclose(d3); chmod("/home/learner/storage/vol3/archive/raw/access.key", 0644); }
+
+    /* Genuine key with size > 50 bytes holding the authentic flag */
     FILE *fk = fopen("/home/learner/storage/vol2/secure/keys/access.key", "w");
     if (fk) {
         fprintf(fk, "=====================================================\n");
@@ -60,6 +68,5 @@ int main(int argc, char *argv[]) {
         chmod("/home/learner/storage/vol2/secure/keys/access.key", 0644);
     }
 
-    system("chown -R learner:learner /home/learner");
     return 0;
 }

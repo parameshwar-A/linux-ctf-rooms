@@ -6,11 +6,11 @@
 #include <unistd.h>
 #include <string.h>
 
-void rot13(const char *in, char *out) {
+static void rot13(const char *in, char *out) {
     while (*in) {
         char c = *in;
-        if (c >= 'a' && c <= 'z') out[0] = 'a' + (c - 'a' + 13) % 26;
-        else if (c >= 'A' && c <= 'Z') out[0] = 'A' + (c - 'A' + 13) % 26;
+        if (c >= 'a' && c <= 'z') out[0] = 'a' + ((c - 'a' + 13) % 26);
+        else if (c >= 'A' && c <= 'Z') out[0] = 'A' + ((c - 'A' + 13) % 26);
         else out[0] = c;
         in++; out++;
     }
@@ -18,13 +18,11 @@ void rot13(const char *in, char *out) {
 }
 
 int main(int argc, char *argv[]) {
-    if (argc < 4) {
-        fprintf(stderr, "[-] Missing session parameters\n");
+    if (argc < 2) {
+        fprintf(stderr, "[-] Missing flag parameter\n");
         return 1;
     }
     const char *flag = argv[1];
-    const char *salt = argv[2];
-    const char *hash = argv[3];
 
     /* 1. Setup MOTD room environment config */
     FILE *fenv = fopen("/etc/linux_ctf_room.env", "w");
@@ -38,31 +36,30 @@ int main(int argc, char *argv[]) {
         chmod("/etc/linux_ctf_room.env", 0644);
     }
 
-    /* 2. Compile hardened submit-flag binary */
-    char compile_cmd[1024];
-    snprintf(compile_cmd, sizeof(compile_cmd),
-        "gcc -O2 -s -DEXPECTED_HASH='\"%s\"' -DSALT='\"%s\"' -DROOM_NAME='\"Level 11 - Cipher Shift\"' "
-        "/opt/linux_ctf/submit_flag.c -o /usr/local/bin/submit-flag",
-        hash, salt);
-    if (system(compile_cmd) != 0) {
-        fprintf(stderr, "[-] Failed to compile validator\n");
+    /* Record decoy */
+    FILE *fdec = fopen("/run/ctf/decoys", "w");
+    if (fdec) {
+        fprintf(fdec, "FLAG{l11_decoy_radio_transmission_ch2}\n");
+        fclose(fdec);
     }
-    chmod("/usr/local/bin/submit-flag", 0755);
 
-    /* 3. Setup puzzle files */
-    char enc_flag[256];
-    rot13(flag, enc_flag);
+    /* 2. Setup intercepted transmission */
+    char full_plain[2048];
+    snprintf(full_plain, sizeof(full_plain),
+        "TRANSMISSION INTERCEPT CH-1:\n"
+        "STATUS: NOISE_BURST\n"
+        "MESSAGE: FLAG{l11_decoy_radio_transmission_ch2}\n\n"
+        "TRANSMISSION INTERCEPT CH-2:\n"
+        "AUTHENTICATED PAYLOAD RECOVERY:\n"
+        "The authorization code has been encrypted with ROT13.\n"
+        "Plaintext token: %s\n", flag);
+
+    char full_enc[4096];
+    rot13(full_plain, full_enc);
 
     FILE *fe = fopen("/home/learner/intercepted.enc", "w");
     if (fe) {
-        char msg[512];
-        snprintf(msg, sizeof(msg),
-            "TOP SECRET INTERCEPT:\n"
-            "The authorization code has been encrypted with ROT13.\n"
-            "Plaintext token: %s\n", flag);
-        char enc_msg[1024];
-        rot13(msg, enc_msg);
-        fprintf(fe, "%s", enc_msg);
+        fprintf(fe, "%s", full_enc);
         fclose(fe);
         chmod("/home/learner/intercepted.enc", 0644);
     }
@@ -76,6 +73,5 @@ int main(int argc, char *argv[]) {
         chmod("/home/learner/README.txt", 0644);
     }
 
-    system("chown -R learner:learner /home/learner");
     return 0;
 }

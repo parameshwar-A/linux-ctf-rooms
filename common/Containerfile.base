@@ -36,8 +36,24 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Create non-root learner user
 RUN useradd -m -s /bin/bash learner
 
-# Copy common assets
-COPY common/validator/submit_flag.c /opt/linux_ctf/submit_flag.c
+# Copy and compile daemon and thin-client verifiers
+COPY common/validator/ctf_checkd.c /tmp/ctf_checkd.c
+COPY common/validator/submit_flag_client.c /tmp/submit_flag_client.c
+COPY common/validator/clients/ /tmp/clients/
+COPY common/ctf_rand.h /usr/local/include/ctf_rand.h
+RUN gcc -O2 -s /tmp/ctf_checkd.c -o /usr/local/bin/ctf-checkd \
+    && gcc -O2 -s /tmp/submit_flag_client.c -o /usr/local/bin/submit-flag \
+    && gcc -O2 -s /tmp/clients/verify_dispatch.c -o /usr/local/bin/verify_dispatch \
+    && gcc -O2 -s /tmp/clients/check_production.c -o /usr/local/bin/check_production \
+    && gcc -O2 -s /tmp/clients/verify_vault.c -o /usr/local/bin/verify_vault \
+    && gcc -O2 -s /tmp/clients/sec_beacon.c -o /usr/local/bin/sec-beacon \
+    && gcc -O2 -s /tmp/clients/report_attacker.c -o /usr/local/bin/report_attacker \
+    && rm -rf /tmp/ctf_checkd.c /tmp/submit_flag_client.c /tmp/clients \
+    && chmod 0700 /usr/local/bin/ctf-checkd \
+    && chmod 0755 /usr/local/bin/submit-flag /usr/local/bin/sec-beacon \
+    && chmod 0711 /usr/local/bin/verify_dispatch /usr/local/bin/check_production /usr/local/bin/verify_vault /usr/local/bin/report_attacker
+
+# Copy helper scripts
 COPY common/scripts/motd_banner.sh /usr/local/bin/motd_banner
 COPY common/scripts/hint.sh /usr/local/bin/hint
 RUN chmod 755 /usr/local/bin/motd_banner /usr/local/bin/hint \
@@ -47,6 +63,12 @@ RUN chmod 755 /usr/local/bin/motd_banner /usr/local/bin/hint \
 RUN echo 'if [ -f /usr/local/bin/motd_banner ]; then /usr/local/bin/motd_banner; fi' >> /etc/bash.bashrc \
     && echo 'PS1="\[\033[1;32m\]learner@linux-ctf\[\033[0m\]:\[\033[1;34m\]\w\[\033[0m\]\$ "' >> /home/learner/.bashrc \
     && chown learner:learner /home/learner/.bashrc
+
+# Strip SUID/SGID bits from system binaries
+RUN find / -xdev -perm /6000 -type f -exec chmod a-s {} + || true
+
+# Lock root password
+RUN passwd -l root
 
 COPY common/scripts/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod 755 /usr/local/bin/entrypoint.sh

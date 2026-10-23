@@ -7,13 +7,11 @@
 #include <string.h>
 
 int main(int argc, char *argv[]) {
-    if (argc < 4) {
-        fprintf(stderr, "[-] Missing session parameters\n");
+    if (argc < 2) {
+        fprintf(stderr, "[-] Missing flag parameter\n");
         return 1;
     }
     const char *flag = argv[1];
-    const char *salt = argv[2];
-    const char *hash = argv[3];
 
     /* 1. Setup MOTD room environment config */
     FILE *fenv = fopen("/etc/linux_ctf_room.env", "w");
@@ -27,19 +25,10 @@ int main(int argc, char *argv[]) {
         chmod("/etc/linux_ctf_room.env", 0644);
     }
 
-    /* 2. Compile hardened submit-flag binary */
-    char compile_cmd[1024];
-    snprintf(compile_cmd, sizeof(compile_cmd),
-        "gcc -O2 -s -DEXPECTED_HASH='\"%s\"' -DSALT='\"%s\"' -DROOM_NAME='\"Level 09 - By the Numbers\"' "
-        "/opt/linux_ctf/submit_flag.c -o /usr/local/bin/submit-flag",
-        hash, salt);
-    if (system(compile_cmd) != 0) {
-        fprintf(stderr, "[-] Failed to compile validator\n");
-    }
-    chmod("/usr/local/bin/submit-flag", 0755);
-
-    /* 3. Setup transcripts files */
+    /* 2. Setup transcripts files with decoys */
     mkdir("/home/learner/transcripts", 0755);
+
+    FILE *fd = fopen("/run/ctf/decoys", "w");
 
     int line_counts[] = {15, 23, 38, 42, 55, 61, 74, 80};
     for (int idx = 0; idx < 8; idx++) {
@@ -48,18 +37,22 @@ int main(int argc, char *argv[]) {
         FILE *fp = fopen(filename, "w");
         if (fp) {
             int target_lines = line_counts[idx];
-            for (int l = 1; l <= target_lines; l++) {
-                if (target_lines == 42 && l == 42) {
-                    fprintf(fp, "[DEBRIEF CONCLUSION] AUTHENTICATED KEY: %s\n", flag);
-                } else {
-                    fprintf(fp, "Line %02d: Transcript telemetry entry #%d - Log status normal\n", l, l * 13);
-                }
+            for (int l = 1; l < target_lines; l++) {
+                fprintf(fp, "Line %02d: Transcript telemetry entry #%d - Log status normal\n", l, l * 13);
+            }
+            if (target_lines == 42) {
+                fprintf(fp, "[DEBRIEF CONCLUSION] AUTHENTICATED KEY: %s\n", flag);
+            } else {
+                char decoy[128];
+                snprintf(decoy, sizeof(decoy), "FLAG{l09_decoy_report_%02d_lines_%02d}", idx + 1, target_lines);
+                fprintf(fp, "[DEBRIEF CONCLUSION] AUTHENTICATED KEY: %s\n", decoy);
+                if (fd) fprintf(fd, "%s\n", decoy);
             }
             fclose(fp);
             chmod(filename, 0644);
         }
     }
+    if (fd) fclose(fd);
 
-    system("chown -R learner:learner /home/learner");
     return 0;
 }

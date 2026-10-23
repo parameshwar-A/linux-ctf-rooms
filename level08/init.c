@@ -7,13 +7,11 @@
 #include <string.h>
 
 int main(int argc, char *argv[]) {
-    if (argc < 4) {
-        fprintf(stderr, "[-] Missing session parameters\n");
+    if (argc < 2) {
+        fprintf(stderr, "[-] Missing flag parameter\n");
         return 1;
     }
     const char *flag = argv[1];
-    const char *salt = argv[2];
-    const char *hash = argv[3];
 
     /* 1. Setup MOTD room environment config */
     FILE *fenv = fopen("/etc/linux_ctf_room.env", "w");
@@ -27,32 +25,29 @@ int main(int argc, char *argv[]) {
         chmod("/etc/linux_ctf_room.env", 0644);
     }
 
-    /* 2. Compile hardened submit-flag binary */
-    char compile_cmd[1024];
-    snprintf(compile_cmd, sizeof(compile_cmd),
-        "gcc -O2 -s -DEXPECTED_HASH='\"%s\"' -DSALT='\"%s\"' -DROOM_NAME='\"Level 08 - Head and Shoulders\"' "
-        "/opt/linux_ctf/submit_flag.c -o /usr/local/bin/submit-flag",
-        hash, salt);
-    if (system(compile_cmd) != 0) {
-        fprintf(stderr, "[-] Failed to compile validator\n");
+    /* Record sample decoys in /run/ctf/decoys */
+    FILE *fd = fopen("/run/ctf/decoys", "w");
+    if (fd) {
+        for (int i = 1; i <= 20; i++) {
+            fprintf(fd, "FLAG{l08_decoy_telemetry_%04d}\n", (i * 91) % 10000);
+        }
+        fclose(fd);
     }
-    chmod("/usr/local/bin/submit-flag", 0755);
 
-    /* 3. Setup 1,000 line telemetry log */
+    /* 2. Setup 1,000 line telemetry log with decoys on every line */
     FILE *fl = fopen("/home/learner/sensor_stream.log", "w");
     if (fl) {
         for (int i = 1; i <= 1000; i++) {
             if (i == 500) {
-                fprintf(fl, "[SENSOR-500] CRITICAL PAYLOAD DETECTED: %s\n", flag);
+                fprintf(fl, "[SENSOR-500] CRITICAL PAYLOAD: %s\n", flag);
             } else {
-                fprintf(fl, "[SENSOR-%03d] Telemetry packet OK - Voltage: 3.%02dV, Temp: 2%d.%dC\n",
-                    i, (i * 7) % 30, (i % 5) + 20, (i * 3) % 9);
+                fprintf(fl, "[SENSOR-%03d] FLAG{l08_decoy_telemetry_%04d}\n",
+                    i, (i * 91) % 10000);
             }
         }
         fclose(fl);
         chmod("/home/learner/sensor_stream.log", 0644);
     }
 
-    system("chown -R learner:learner /home/learner");
     return 0;
 }

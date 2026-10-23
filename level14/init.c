@@ -7,13 +7,11 @@
 #include <string.h>
 
 int main(int argc, char *argv[]) {
-    if (argc < 4) {
-        fprintf(stderr, "[-] Missing session parameters\n");
+    if (argc < 2) {
+        fprintf(stderr, "[-] Missing flag parameter\n");
         return 1;
     }
     const char *flag = argv[1];
-    const char *salt = argv[2];
-    const char *hash = argv[3];
 
     /* 1. Setup MOTD room environment config */
     FILE *fenv = fopen("/etc/linux_ctf_room.env", "w");
@@ -27,19 +25,10 @@ int main(int argc, char *argv[]) {
         chmod("/etc/linux_ctf_room.env", 0644);
     }
 
-    /* 2. Compile hardened submit-flag binary */
-    char compile_cmd[1024];
-    snprintf(compile_cmd, sizeof(compile_cmd),
-        "gcc -O2 -s -DEXPECTED_HASH='\"%s\"' -DSALT='\"%s\"' -DROOM_NAME='\"Level 14 - The Vault\"' "
-        "/opt/linux_ctf/submit_flag.c -o /usr/local/bin/submit-flag",
-        hash, salt);
-    if (system(compile_cmd) != 0) {
-        fprintf(stderr, "[-] Failed to compile validator\n");
-    }
-    chmod("/usr/local/bin/submit-flag", 0755);
+    /* 2. Setup archive */
+    mkdir("/tmp/vault_pack", 0755);
+    mkdir("/tmp/vault_pack/vault_data", 0755);
 
-    /* 3. Setup archive */
-    system("mkdir -p /tmp/vault_pack/vault_data");
     FILE *fc = fopen("/tmp/vault_pack/vault_data/credentials.txt", "w");
     if (fc) {
         fprintf(fc, "=====================================================\n");
@@ -48,10 +37,9 @@ int main(int argc, char *argv[]) {
         fprintf(fc, "RECOVERED FLAG: %s\n", flag);
         fclose(fc);
     }
-    system("tar -czf /home/learner/classified_vault.tar.gz -C /tmp/vault_pack vault_data");
-    system("rm -rf /tmp/vault_pack");
+
+    system("tar -czf /home/learner/classified_vault.tar.gz -C /tmp/vault_pack vault_data && rm -rf /tmp/vault_pack");
     chmod("/home/learner/classified_vault.tar.gz", 0644);
 
-    system("chown -R learner:learner /home/learner");
     return 0;
 }

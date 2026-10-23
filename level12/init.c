@@ -7,13 +7,11 @@
 #include <string.h>
 
 int main(int argc, char *argv[]) {
-    if (argc < 4) {
-        fprintf(stderr, "[-] Missing session parameters\n");
+    if (argc < 2) {
+        fprintf(stderr, "[-] Missing flag parameter\n");
         return 1;
     }
     const char *flag = argv[1];
-    const char *salt = argv[2];
-    const char *hash = argv[3];
 
     /* 1. Setup MOTD room environment config */
     FILE *fenv = fopen("/etc/linux_ctf_room.env", "w");
@@ -27,22 +25,13 @@ int main(int argc, char *argv[]) {
         chmod("/etc/linux_ctf_room.env", 0644);
     }
 
-    /* 2. Compile hardened submit-flag binary */
-    char compile_cmd[1024];
-    snprintf(compile_cmd, sizeof(compile_cmd),
-        "gcc -O2 -s -DEXPECTED_HASH='\"%s\"' -DSALT='\"%s\"' -DROOM_NAME='\"Level 12 - The Log Whisperer\"' "
-        "/opt/linux_ctf/submit_flag.c -o /usr/local/bin/submit-flag",
-        hash, salt);
-    if (system(compile_cmd) != 0) {
-        fprintf(stderr, "[-] Failed to compile validator\n");
-    }
-    chmod("/usr/local/bin/submit-flag", 0755);
-
-    /* 3. Setup log directories */
+    /* 2. Setup log directories with decoys */
     mkdir("/home/learner/logs", 0755);
     mkdir("/home/learner/logs/app", 0755);
     mkdir("/home/learner/logs/auth", 0755);
     mkdir("/home/learner/logs/audit", 0755);
+
+    FILE *fdec = fopen("/run/ctf/decoys", "w");
 
     for (int i = 1; i <= 6; i++) {
         char path[128];
@@ -52,6 +41,12 @@ int main(int argc, char *argv[]) {
             for (int j = 1; j <= 50; j++) {
                 if (i == 4 && j == 27) {
                     fprintf(fp, "[2026-10-14 14:02:11] [ERROR] [ERR_LEAK_9918] Authentication token leaked: %s\n", flag);
+                } else if (j == 10 || j == 35) {
+                    char decoy[128];
+                    snprintf(decoy, sizeof(decoy), "FLAG{l12_decoy_err_leak_noise_srv%02d_j%02d}", i, j);
+                    fprintf(fp, "[2026-10-14 14:01:%02d] [WARN] [ERR_NOISE_%04d] Leaked session candidate: %s\n",
+                        j % 60, (i * 100 + j), decoy);
+                    if (fdec) fprintf(fdec, "%s\n", decoy);
                 } else {
                     fprintf(fp, "[2026-10-14 14:01:%02d] [INFO] GET /api/v1/status HTTP/1.1 200 OK - client: 192.168.1.%d\n",
                         j % 60, (j * 7) % 250);
@@ -61,7 +56,7 @@ int main(int argc, char *argv[]) {
             chmod(path, 0644);
         }
     }
+    if (fdec) fclose(fdec);
 
-    system("chown -R learner:learner /home/learner");
     return 0;
 }

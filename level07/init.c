@@ -7,13 +7,11 @@
 #include <string.h>
 
 int main(int argc, char *argv[]) {
-    if (argc < 4) {
-        fprintf(stderr, "[-] Missing session parameters\n");
+    if (argc < 2) {
+        fprintf(stderr, "[-] Missing flag parameter\n");
         return 1;
     }
     const char *flag = argv[1];
-    const char *salt = argv[2];
-    const char *hash = argv[3];
 
     /* 1. Setup MOTD room environment config */
     FILE *fenv = fopen("/etc/linux_ctf_room.env", "w");
@@ -27,38 +25,48 @@ int main(int argc, char *argv[]) {
         chmod("/etc/linux_ctf_room.env", 0644);
     }
 
-    /* 2. Compile hardened submit-flag binary */
-    char compile_cmd[1024];
-    snprintf(compile_cmd, sizeof(compile_cmd),
-        "gcc -O2 -s -DEXPECTED_HASH='\"%s\"' -DSALT='\"%s\"' -DROOM_NAME='\"Level 07 - Disguised Identities\"' "
-        "/opt/linux_ctf/submit_flag.c -o /usr/local/bin/submit-flag",
-        hash, salt);
-    if (system(compile_cmd) != 0) {
-        fprintf(stderr, "[-] Failed to compile validator\n");
-    }
-    chmod("/usr/local/bin/submit-flag", 0755);
-
-    /* 3. Setup puzzle layout */
+    /* 2. Setup puzzle layout with decoys */
     mkdir("/home/learner/suspects", 0755);
 
-    /* photo.png is actually gzip compressed data */
-    system("echo 'dummy binary compressed stream' | gzip > /home/learner/suspects/photo.png");
+    /* Record decoys in /run/ctf/decoys */
+    FILE *fd = fopen("/run/ctf/decoys", "w");
+    if (fd) {
+        fprintf(fd, "FLAG{l07_decoy_in_compressed_photo}\n");
+        fprintf(fd, "FLAG{l07_decoy_in_audio_waveform}\n");
+        fprintf(fd, "FLAG{l07_decoy_in_pdf_executable}\n");
+        fprintf(fd, "FLAG{l07_decoy_in_backup_archive}\n");
+        fclose(fd);
+    }
 
-    /* audio.mp3 is binary data */
+    /* photo.png: gzip compressed data with embedded decoy */
+    FILE *fp = fopen("/tmp/photo_plain.txt", "w");
+    if (fp) {
+        fprintf(fp, "BINARY IMAGE STREAM ... FLAG{l07_decoy_in_compressed_photo}\n");
+        fclose(fp);
+        system("gzip -c /tmp/photo_plain.txt > /home/learner/suspects/photo.png && rm -f /tmp/photo_plain.txt");
+    }
+
+    /* audio.mp3: binary data with embedded decoy */
     FILE *fa = fopen("/home/learner/suspects/audio.mp3", "wb");
     if (fa) {
-        unsigned char dummy[64] = {0xDE, 0xAD, 0xBE, 0xEF, 0x00, 0xFF, 0x12, 0x34};
+        unsigned char dummy[] = {0xFF, 0xFB, 0x90, 0x44, 0x00, 0x12, 0x34, 0x56};
         fwrite(dummy, 1, sizeof(dummy), fa);
+        fprintf(fa, "ID3_HEADER_AUDIO_STREAM_FLAG{l07_decoy_in_audio_waveform}\x00\xFF");
         fclose(fa);
     }
 
-    /* manual.pdf is an ELF binary (copy of /bin/true) */
-    system("cp /bin/true /home/learner/suspects/manual.pdf");
+    /* manual.pdf: copy of ELF binary with decoy appended */
+    system("cp /bin/true /home/learner/suspects/manual.pdf && echo 'FLAG{l07_decoy_in_pdf_executable}' >> /home/learner/suspects/manual.pdf");
 
-    /* backup.tar is random binary bytes */
-    system("head -c 128 /dev/urandom > /home/learner/suspects/backup.tar");
+    /* backup.tar: random binary bytes with decoy */
+    FILE *fb = fopen("/home/learner/suspects/backup.tar", "wb");
+    if (fb) {
+        for (int i = 0; i < 64; i++) fputc((i * 37) % 256, fb);
+        fprintf(fb, "USTAR_STREAM_FLAG{l07_decoy_in_backup_archive}\x00");
+        fclose(fb);
+    }
 
-    /* firmware.bin is SECRETLY plain ASCII text holding the flag! */
+    /* firmware.bin is SECRETLY plain ASCII text holding the genuine flag! */
     FILE *ff = fopen("/home/learner/suspects/firmware.bin", "w");
     if (ff) {
         fprintf(ff, "CLASSIFIED MEMORANDUM\n");
@@ -68,6 +76,5 @@ int main(int argc, char *argv[]) {
         chmod("/home/learner/suspects/firmware.bin", 0644);
     }
 
-    system("chown -R learner:learner /home/learner");
     return 0;
 }

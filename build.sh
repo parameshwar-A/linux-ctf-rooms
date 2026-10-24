@@ -85,21 +85,23 @@ case "$cmd" in
         test_salt="$(head -c 16 /dev/urandom | xxd -p)"
         test_hash=$(echo -n "${test_flag}::${test_salt}" | sha256sum | cut -d' ' -f1)
 
-        echo "[*] Testing Room ${room_num} with dynamic flag..."
-        
+        echo "[*] Testing Room ${room_num} with dynamic flag via podman secret..."
+        secret_name="ctf-flag-${room_num}-${test_token:0:8}"
+        echo -n "$test_flag" | podman secret create "$secret_name" - >/dev/null 2>&1
+        trap 'podman secret rm "$secret_name" >/dev/null 2>&1 || true' EXIT
+
         # Test incorrect flag
         podman run --rm \
-            -e CTF_FLAG="$test_flag" \
-            -e CTF_SALT="$test_salt" \
-            -e CTF_HASH="$test_hash" \
+            --secret "${secret_name},target=ctf_flag,mode=0400" \
             "$tag" "/usr/local/bin/submit-flag 'FLAG{wrong_guess}'" || true
         
         # Test correct flag
         podman run --rm \
-            -e CTF_FLAG="$test_flag" \
-            -e CTF_SALT="$test_salt" \
-            -e CTF_HASH="$test_hash" \
+            --secret "${secret_name},target=ctf_flag,mode=0400" \
             "$tag" "/usr/local/bin/submit-flag '$test_flag'"
+
+        podman secret rm "$secret_name" >/dev/null 2>&1 || true
+        trap - EXIT
         echo "[+] Test passed for Room ${room_num}!"
         ;;
     push)

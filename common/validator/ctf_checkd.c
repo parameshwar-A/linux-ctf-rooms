@@ -9,6 +9,7 @@
 #include <sys/time.h>
 #include <signal.h>
 #include <ctype.h>
+#include <fcntl.h>
 
 #define SOCKET_PATH "/run/ctf.sock"
 #define FLAG_PATH "/run/ctf/flag"
@@ -18,6 +19,18 @@
 static char g_flag[256] = {0};
 static char g_answer[256] = {0};
 static char g_current_room_id[16] = {0};
+
+/* Open file safely: rejects non-regular files (FIFOs/devices) and symlinks, never blocks */
+static FILE *safe_open_regular_read(const char *path) {
+    int fd = open(path, O_RDONLY | O_NOFOLLOW | O_NONBLOCK);
+    if (fd < 0) return NULL;
+    struct stat st;
+    if (fstat(fd, &st) != 0 || !S_ISREG(st.st_mode)) {
+        close(fd);
+        return NULL;
+    }
+    return fdopen(fd, "r");
+}
 
 static void safe_copy(char *dst, size_t dst_sz, const char *src) {
     if (!dst || dst_sz == 0) return;
@@ -111,12 +124,16 @@ static void handle_submit(int client_fd, const char *arg) {
             "  \033[1;32m[+] Room completed successfully.\033[0m\n"
             "\033[1;32m============================================================\033[0m\n");
     } else if (is_decoy(clean_flag)) {
+        /* Anti-bruteforce delay on decoys / wrong guesses (300ms) */
+        usleep(300000);
         dprintf(client_fd,
             "DECOY\n"
             "\033[1;33m============================================================\033[0m\n"
             "  \033[1;33m[-] That's a decoy flag! Re-read the room mission.\033[0m\n"
             "\033[1;33m============================================================\033[0m\n");
     } else {
+        /* Anti-bruteforce delay on incorrect submissions (300ms) */
+        usleep(300000);
         dprintf(client_fd,
             "INCORRECT\n"
             "\033[1;31m============================================================\033[0m\n"
@@ -127,9 +144,9 @@ static void handle_submit(int client_fd, const char *arg) {
 }
 
 static void handle_check_03(int client_fd) {
-    FILE *f = fopen("/home/learner/dispatch.conf", "r");
+    FILE *f = safe_open_regular_read("/home/learner/dispatch.conf");
     if (!f) {
-        dprintf(client_fd, "FAIL [-] 'dispatch.conf' not found! Please create the configuration file first.\n");
+        dprintf(client_fd, "FAIL [-] 'dispatch.conf' not found or invalid! Please create the configuration file first.\n");
         return;
     }
     char l1[128] = {0}, l2[128] = {0};
@@ -142,20 +159,27 @@ static void handle_check_03(int client_fd) {
     trim(l1);
     trim(l2);
 
-    /* Read expected answer if dynamic answer file present, else default */
-    char exp1[128] = "MODE=ACTIVE";
-    char exp2[128] = "TARGET=PRODUCTION";
+    /* Read expected answer from root-only ANSWER_PATH (fail closed if missing) */
+    char exp1[128] = {0};
+    char exp2[128] = {0};
     FILE *fa = fopen(ANSWER_PATH, "r");
-    if (fa) {
-        char al1[128] = {0}, al2[128] = {0};
-        if (fgets(al1, sizeof(al1), fa) && fgets(al2, sizeof(al2), fa)) {
-            trim(al1); trim(al2);
-            if (strlen(al1) > 0 && strlen(al2) > 0) {
-                safe_copy(exp1, sizeof(exp1), al1);
-                safe_copy(exp2, sizeof(exp2), al2);
-            }
+    if (!fa) {
+        dprintf(client_fd, "FAIL [-] Validation service error: answer configuration missing.\n");
+        return;
+    }
+    char al1[128] = {0}, al2[128] = {0};
+    if (fgets(al1, sizeof(al1), fa) && fgets(al2, sizeof(al2), fa)) {
+        trim(al1); trim(al2);
+        if (strlen(al1) > 0 && strlen(al2) > 0) {
+            safe_copy(exp1, sizeof(exp1), al1);
+            safe_copy(exp2, sizeof(exp2), al2);
         }
-        fclose(fa);
+    }
+    fclose(fa);
+
+    if (strlen(exp1) == 0 || strlen(exp2) == 0) {
+        dprintf(client_fd, "FAIL [-] Validation service error: answer configuration unreadable.\n");
+        return;
     }
 
     if (strcmp(l1, exp1) == 0 && strcmp(l2, exp2) == 0) {
@@ -166,23 +190,46 @@ static void handle_check_03(int client_fd) {
 }
 
 static void handle_check_04(int client_fd) {
+    FILE *fp = safe_open_regular_read("/home/learner/production/app_payload.dat");
+    if (!fp) {
+        dprintf(client_fd, "FAIL [-] 'production/app_payload.dat' not found or invalid! Did you move it?\n");
+        return;
+    }
+    char line[128] = {0};
+    int has_payload = 0;
+    while (fgets(line, sizeof(line), fp)) {
+        if (strstr(line, "APP-PAYLOAD-99214")) {
+            has_payload = 1;
+            break;
+        }
+    }
+    fclose(fp);
+
+    if (!has_payload) {
+        dprintf(client_fd, "FAIL [-] 'production/app_payload.dat' does not contain authentic payload data!\n");
+        return;
+    }
+
+    FILE *fb = safe_open_regular_read("/home/learner/backups/app_payload.dat");
+    if (!fb) {
+        dprintf(client_fd, "FAIL [-] 'backups/app_payload.dat' not found or invalid! Did you create the backup copy?\n");
+        return;
+    }
+    fclose(fb);
+
     struct stat s_prod, s_bak;
-    if (stat("/home/learner/production/app_payload.dat", &s_prod) != 0) {
-        dprintf(client_fd, "FAIL [-] 'production/app_payload.dat' not found! Did you move it?\n");
+    if (stat("/home/learner/production/app_payload.dat", &s_prod) != 0 ||
+        stat("/home/learner/backups/app_payload.dat", &s_bak) != 0 ||
+        s_prod.st_size <= 0 || s_prod.st_size != s_bak.st_size) {
+        dprintf(client_fd, "FAIL [-] Production and backup payloads differ in size or are empty.\n");
         return;
     }
-    if (stat("/home/learner/backups/app_payload.dat", &s_bak) != 0) {
-        dprintf(client_fd, "FAIL [-] 'backups/app_payload.dat' not found! Did you create the backup copy?\n");
-        return;
-    }
+
     if (access("/home/learner/staging/temp_payload.dat", F_OK) == 0) {
         dprintf(client_fd, "FAIL [-] Original file 'staging/temp_payload.dat' still exists! Remember to MOVE (mv) it, not copy.\n");
         return;
     }
-    if (s_prod.st_size <= 0 || s_prod.st_size != s_bak.st_size) {
-        dprintf(client_fd, "FAIL [-] Production and backup payloads differ in size or are empty.\n");
-        return;
-    }
+
     dprintf(client_fd, "OK %s\n", g_flag);
 }
 
@@ -191,12 +238,26 @@ static void handle_check_05(int client_fd) {
         dprintf(client_fd, "FAIL [-] 'secret_key.txt' still exists in 'sandbox/clutter/'!\n    Please move the key into the secure vault.\n");
         return;
     }
-    FILE *f = fopen("/home/learner/sandbox/secure_vault/secret_key.txt", "r");
+    FILE *f = safe_open_regular_read("/home/learner/sandbox/secure_vault/secret_key.txt");
     if (!f) {
-        dprintf(client_fd, "FAIL [-] Key file 'sandbox/secure_vault/secret_key.txt' not found!\n    Locate the secret key amidst the clutter and move it into the vault.\n");
+        dprintf(client_fd, "FAIL [-] Key file 'sandbox/secure_vault/secret_key.txt' not found or invalid!\n    Locate the secret key amidst the clutter and move it into the vault.\n");
         return;
     }
+    char line[128] = {0};
+    int has_key = 0;
+    while (fgets(line, sizeof(line), f)) {
+        if (strstr(line, "VAULT-TOKEN-AUTHENTICATED")) {
+            has_key = 1;
+            break;
+        }
+    }
     fclose(f);
+
+    if (!has_key) {
+        dprintf(client_fd, "FAIL [-] Key file does not contain the authentic vault key!\n");
+        return;
+    }
+
     dprintf(client_fd, "OK %s\n", g_flag);
 }
 
@@ -240,13 +301,20 @@ static void handle_check_15(int client_fd, const char *arg) {
         return;
     }
 
-    char exp_ip[128] = "10.0.4.77";
+    char exp_ip[128] = {0};
     FILE *fa = fopen(ANSWER_PATH, "r");
-    if (fa) {
-        if (fgets(exp_ip, sizeof(exp_ip), fa)) {
-            trim(exp_ip);
-        }
-        fclose(fa);
+    if (!fa) {
+        dprintf(client_fd, "FAIL [-] Validation service error: answer configuration missing.\n");
+        return;
+    }
+    if (fgets(exp_ip, sizeof(exp_ip), fa)) {
+        trim(exp_ip);
+    }
+    fclose(fa);
+
+    if (strlen(exp_ip) == 0) {
+        dprintf(client_fd, "FAIL [-] Validation service error: empty answer configuration.\n");
+        return;
     }
 
     if (strcmp(input_ip, exp_ip) == 0) {

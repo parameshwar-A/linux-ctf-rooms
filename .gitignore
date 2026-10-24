@@ -1,0 +1,17 @@
+# Operating System & Temporary Files
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+*.swp
+*.swo
+*~
+
+# Build artifacts
+*.tar.gz
+*.tar
+*.iso
+
+# IDE & Editor Configurations
+.vscode/
+.idea/

@@ -5,6 +5,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <string.h>
+#include <ctf_rand.h>
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
@@ -30,17 +31,19 @@ int main(int argc, char *argv[]) {
 
     FILE *fd = fopen("/run/ctf/decoys", "w");
 
-    int line_counts[] = {15, 23, 38, 42, 55, 61, 74, 80};
+    int decoy_counts[] = {15, 23, 31, 38, 55, 61, 74, 80};
+    int target_idx = ctf_rand(8);
+
     for (int idx = 0; idx < 8; idx++) {
         char filename[128];
         snprintf(filename, sizeof(filename), "/home/learner/transcripts/report_%02d.txt", idx + 1);
         FILE *fp = fopen(filename, "w");
         if (fp) {
-            int target_lines = line_counts[idx];
+            int target_lines = (idx == target_idx) ? 42 : decoy_counts[idx];
             for (int l = 1; l < target_lines; l++) {
                 fprintf(fp, "Line %02d: Transcript telemetry entry #%d - Log status normal\n", l, l * 13);
             }
-            if (target_lines == 42) {
+            if (idx == target_idx) {
                 fprintf(fp, "[DEBRIEF CONCLUSION] AUTHENTICATED KEY: %s\n", flag);
             } else {
                 char decoy[128];

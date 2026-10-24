@@ -80,9 +80,9 @@ case "$cmd" in
             exit 1
         fi
 
-        test_token=$(head -c 6 /dev/urandom | xxd -p)
+        test_token=$(head -c 16 /dev/urandom | xxd -p)
         test_flag="FLAG{l${room_num}_${test_token}}"
-        test_salt="$(head -c 8 /dev/urandom | xxd -p)"
+        test_salt="$(head -c 16 /dev/urandom | xxd -p)"
         test_hash=$(echo -n "${test_flag}::${test_salt}" | sha256sum | cut -d' ' -f1)
 
         echo "[*] Testing Room ${room_num} with dynamic flag..."

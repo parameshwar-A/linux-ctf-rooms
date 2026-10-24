@@ -47,11 +47,16 @@ unset CTF_FLAG CTF_SALT CTF_HASH
 cd /home/learner
 
 # 7. Drop privileges via setpriv
-if [ $# -gt 0 ]; then
+if [ $# -gt 1 ]; then
     exec setpriv --reuid=learner --regid=learner --init-groups \
          --inh-caps=-all --bounding-set=-all --no-new-privs \
          env -i HOME=/home/learner USER=learner TERM="${TERM:-xterm-256color}" PATH=/usr/local/bin:/usr/bin:/bin \
-         bash -c "$*"
+         "$@"
+elif [ $# -eq 1 ]; then
+    exec setpriv --reuid=learner --regid=learner --init-groups \
+         --inh-caps=-all --bounding-set=-all --no-new-privs \
+         env -i HOME=/home/learner USER=learner TERM="${TERM:-xterm-256color}" PATH=/usr/local/bin:/usr/bin:/bin \
+         bash -c "$1"
 else
     exec setpriv --reuid=learner --regid=learner --init-groups \
          --inh-caps=-all --bounding-set=-all --no-new-privs \

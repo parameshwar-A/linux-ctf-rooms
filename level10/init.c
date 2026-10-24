@@ -5,6 +5,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <string.h>
+#include <ctf_rand.h>
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
@@ -47,10 +48,12 @@ int main(int argc, char *argv[]) {
         fclose(fdec);
     }
 
+    int unique_pos = ctf_rand(200);
+
     FILE *fl = fopen("/home/learner/transaction_hashes.txt", "w");
     if (fl) {
         for (int i = 0; i < 200; i++) {
-            if (i == 137) {
+            if (i == unique_pos) {
                 fprintf(fl, "%s\n", flag);
             } else {
                 fprintf(fl, "%s\n", decoys[i % 10]);

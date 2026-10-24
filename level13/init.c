@@ -5,6 +5,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <string.h>
+#include <ctf_rand.h>
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
@@ -39,33 +40,43 @@ int main(int argc, char *argv[]) {
     mkdir("/home/learner/storage/vol3/archive", 0755);
     mkdir("/home/learner/storage/vol3/archive/raw", 0755);
 
+    /* Candidate paths for access.key */
+    const char *paths[] = {
+        "/home/learner/storage/vol1/dept_a/node1/access.key",
+        "/home/learner/storage/vol1/dept_b/node2/access.key",
+        "/home/learner/storage/vol2/secure/keys/access.key",
+        "/home/learner/storage/vol3/archive/raw/access.key"
+    };
+
+    int target_idx = ctf_rand(4);
+
     /* Record decoys in /run/ctf/decoys */
     FILE *fdec = fopen("/run/ctf/decoys", "w");
     if (fdec) {
-        fprintf(fdec, "FLAG{l13_decoy_k1}\n");
-        fprintf(fdec, "FLAG{l13_decoy_k2}\n");
+        for (int i = 0; i < 4; i++) {
+            if (i != target_idx) {
+                fprintf(fdec, "FLAG{l13_decoy_k%d}\n", i + 1);
+            }
+        }
         fclose(fdec);
     }
 
-    /* Small decoy keys (all strictly under 50 bytes) */
-    FILE *d1 = fopen("/home/learner/storage/vol1/dept_a/node1/access.key", "w");
-    if (d1) { fprintf(d1, "FLAG{l13_decoy_k1}\n"); fclose(d1); chmod("/home/learner/storage/vol1/dept_a/node1/access.key", 0644); }
-
-    FILE *d2 = fopen("/home/learner/storage/vol1/dept_b/node2/access.key", "w");
-    if (d2) { fprintf(d2, "KEY: FLAG{l13_decoy_k2}\n"); fclose(d2); chmod("/home/learner/storage/vol1/dept_b/node2/access.key", 0644); }
-
-    FILE *d3 = fopen("/home/learner/storage/vol3/archive/raw/access.key", "w");
-    if (d3) { fprintf(d3, "EMPTY\n"); fclose(d3); chmod("/home/learner/storage/vol3/archive/raw/access.key", 0644); }
-
-    /* Genuine key with size > 50 bytes holding the authentic flag */
-    FILE *fk = fopen("/home/learner/storage/vol2/secure/keys/access.key", "w");
-    if (fk) {
-        fprintf(fk, "=====================================================\n");
-        fprintf(fk, "  AUTHENTICATED STORAGE MASTER ACCESS KEY\n");
-        fprintf(fk, "=====================================================\n");
-        fprintf(fk, "AUTHORIZED CREDENTIAL: %s\n", flag);
-        fclose(fk);
-        chmod("/home/learner/storage/vol2/secure/keys/access.key", 0644);
+    for (int i = 0; i < 4; i++) {
+        FILE *fk = fopen(paths[i], "w");
+        if (fk) {
+            if (i == target_idx) {
+                /* Genuine key: size strictly greater than 50 bytes holding the authentic flag */
+                fprintf(fk, "=====================================================\n");
+                fprintf(fk, "  AUTHENTICATED STORAGE MASTER ACCESS KEY\n");
+                fprintf(fk, "=====================================================\n");
+                fprintf(fk, "AUTHORIZED CREDENTIAL: %s\n", flag);
+            } else {
+                /* Small decoy key: size strictly under 50 bytes */
+                fprintf(fk, "FLAG{l13_decoy_k%d}\n", i + 1);
+            }
+            fclose(fk);
+            chmod(paths[i], 0644);
+        }
     }
 
     return 0;

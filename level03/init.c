@@ -5,6 +5,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <string.h>
+#include <ctf_rand.h>
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
@@ -24,15 +25,32 @@ int main(int argc, char *argv[]) {
         chmod("/etc/linux_ctf_room.env", 0644);
     }
 
-    /* 2. Setup puzzle layout */
+    /* 2. Randomize configuration keys per session */
+    const char *modes[] = {"ACTIVE", "STANDBY", "DEPLOY", "ONLINE", "DISPATCH"};
+    const char *targets[] = {"PRODUCTION", "CLUSTER_A", "DATACENTER", "PRIMARY", "SECURE_ZONE"};
+    int m_idx = ctf_rand(5);
+    int t_idx = ctf_rand(5);
+    char line1[128], line2[128];
+    snprintf(line1, sizeof(line1), "MODE=%s", modes[m_idx]);
+    snprintf(line2, sizeof(line2), "TARGET=%s", targets[t_idx]);
+
+    /* Write expected answer to root-only /run/ctf/answer */
+    FILE *fa = fopen("/run/ctf/answer", "w");
+    if (fa) {
+        fprintf(fa, "%s\n%s\n", line1, line2);
+        fclose(fa);
+        chmod("/run/ctf/answer", 0600);
+    }
+
+    /* 3. Setup puzzle layout */
     FILE *fn = fopen("/home/learner/INSTRUCTIONS.txt", "w");
     if (fn) {
         fprintf(fn, "=========================================================\n");
         fprintf(fn, "  Mission: Configure the Dispatch Daemon\n");
         fprintf(fn, "=========================================================\n");
         fprintf(fn, "The dispatch daemon requires 'dispatch.conf' with exactly:\n\n");
-        fprintf(fn, "Line 1: MODE=ACTIVE\n");
-        fprintf(fn, "Line 2: TARGET=PRODUCTION\n\n");
+        fprintf(fn, "Line 1: %s\n", line1);
+        fprintf(fn, "Line 2: %s\n\n", line2);
         fprintf(fn, "Write the required configuration keys into 'dispatch.conf'.\n");
         fprintf(fn, "Ensure both lines are present and exact.\n");
         fprintf(fn, "Once ready, execute: ./verify_dispatch\n");
@@ -40,7 +58,7 @@ int main(int argc, char *argv[]) {
         chmod("/home/learner/INSTRUCTIONS.txt", 0644);
     }
 
-    /* 3. Link pre-compiled thin-client verifier (zero flags embedded) */
+    /* 4. Link pre-compiled thin-client verifier (zero flags embedded) */
     unlink("/home/learner/verify_dispatch");
     symlink("/usr/local/bin/verify_dispatch", "/home/learner/verify_dispatch");
 

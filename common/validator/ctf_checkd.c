@@ -171,10 +171,31 @@ static void handle_check_05(int client_fd) {
 
 static void handle_check_06(int client_fd, const char *arg) {
     if (!arg || strlen(arg) == 0) {
-        dprintf(client_fd, "FAIL [-] Authentication Error: Location parameter missing!\n");
+        dprintf(client_fd, "FAIL [-] Authentication Error: Location parameter missing!\n    Usage: sec-beacon <FULL_BINARY_PATH>\n");
         return;
     }
-    dprintf(client_fd, "OK %s\n", g_flag);
+    char clean_path[256] = {0};
+    strncpy(clean_path, arg, sizeof(clean_path) - 1);
+    trim(clean_path);
+
+    char exp_path[256] = "/usr/local/bin/sec-beacon";
+    FILE *fa = fopen(ANSWER_PATH, "r");
+    if (fa) {
+        if (fgets(exp_path, sizeof(exp_path), fa)) {
+            trim(exp_path);
+        }
+        fclose(fa);
+    }
+
+    if (strcmp(clean_path, exp_path) == 0 ||
+        (strcmp(exp_path, "/usr/local/bin/sec-beacon") == 0 && strcmp(clean_path, "/usr/local/bin") == 0)) {
+        dprintf(client_fd, "OK %s\n", g_flag);
+    } else {
+        dprintf(client_fd,
+            "FAIL [-] Authentication Failed: '%s' is NOT where this binary is installed!\n"
+            "    Hint: Use 'which sec-beacon' to locate the binary on your PATH.\n",
+            clean_path);
+    }
 }
 
 static void handle_check_15(int client_fd, const char *arg) {

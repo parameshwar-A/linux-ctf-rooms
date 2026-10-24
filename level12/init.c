@@ -5,6 +5,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <string.h>
+#include <ctf_rand.h>
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
@@ -19,7 +20,7 @@ int main(int argc, char *argv[]) {
         fprintf(fenv, "ROOM_ID=\"12\"\n");
         fprintf(fenv, "ROOM_TITLE=\"The Log Whisperer\"\n");
         fprintf(fenv, "ROOM_COMMANDS=\"grep\"\n");
-        fprintf(fenv, "ROOM_MISSION=\"The 'logs/' directory contains dozens of access logs with thousands of web requests. Find the suspicious entry tagged with error code 'ERR_LEAK_9918' and extract the leaked flag!\"\n");
+        fprintf(fenv, "ROOM_MISSION=\"The 'logs/' directory contains access logs across several servers with thousands of web requests. Find the suspicious entry tagged with error code 'ERR_LEAK_9918' and extract the leaked flag!\"\n");
         fprintf(fenv, "ROOM_HINT=\"Find a command which can help us to search through files. Use 'man -k <keyword>' for keyword based searches. Search the man pages for keywords like: search for patterns / match pattern / search\"\n");
         fclose(fenv);
         chmod("/etc/linux_ctf_room.env", 0644);
@@ -33,15 +34,18 @@ int main(int argc, char *argv[]) {
 
     FILE *fdec = fopen("/run/ctf/decoys", "w");
 
+    int target_srv = 1 + ctf_rand(6);
+    int target_line = 10 + ctf_rand(35);
+
     for (int i = 1; i <= 6; i++) {
         char path[128];
         snprintf(path, sizeof(path), "/home/learner/logs/app/server_%02d.log", i);
         FILE *fp = fopen(path, "w");
         if (fp) {
             for (int j = 1; j <= 50; j++) {
-                if (i == 4 && j == 27) {
+                if (i == target_srv && j == target_line) {
                     fprintf(fp, "[2026-10-14 14:02:11] [ERROR] [ERR_LEAK_9918] Authentication token leaked: %s\n", flag);
-                } else if (j == 10 || j == 35) {
+                } else if (j == 12 || j == 38) {
                     char decoy[128];
                     snprintf(decoy, sizeof(decoy), "FLAG{l12_decoy_err_leak_noise_srv%02d_j%02d}", i, j);
                     fprintf(fp, "[2026-10-14 14:01:%02d] [WARN] [ERR_NOISE_%04d] Leaked session candidate: %s\n",

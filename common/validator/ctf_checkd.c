@@ -10,6 +10,7 @@
 #include <signal.h>
 #include <ctype.h>
 #include <fcntl.h>
+#include <dirent.h>
 
 #define SOCKET_PATH "/run/ctf.sock"
 #define FLAG_PATH "/run/ctf/flag"
@@ -92,19 +93,29 @@ static void read_file_secret(const char *path, char *buf, size_t max_len) {
 }
 
 static int is_decoy(const char *input) {
+    if (!input || strlen(input) == 0) return 0;
     FILE *f = fopen(DECOYS_PATH, "r");
-    if (!f) return 0;
-    char line[256];
-    int matched = 0;
-    while (fgets(line, sizeof(line), f)) {
-        trim(line);
-        if (strlen(line) > 0 && ct_equal(input, line)) {
-            matched = 1;
-            break;
+    if (f) {
+        char line[256];
+        while (fgets(line, sizeof(line), f)) {
+            trim(line);
+            if (strlen(line) > 0 && ct_equal(input, line)) {
+                fclose(f);
+                return 1;
+            }
+        }
+        fclose(f);
+    }
+    /* Dynamic pattern check: if input matches current room's flag format but isn't g_flag */
+    if (g_current_room_id[0] != '\0') {
+        char prefix[32];
+        snprintf(prefix, sizeof(prefix), "FLAG{l%s_", g_current_room_id);
+        size_t plen = strlen(prefix);
+        if (strncmp(input, prefix, plen) == 0 && input[strlen(input) - 1] == '}') {
+            return 1;
         }
     }
-    fclose(f);
-    return matched;
+    return 0;
 }
 
 static void handle_submit(int client_fd, const char *arg) {
@@ -235,11 +246,13 @@ static void handle_check_04(int client_fd) {
 
 static void handle_check_05(int client_fd) {
     if (access("/home/learner/sandbox/clutter/secret_key.txt", F_OK) == 0) {
+        usleep(300000);
         dprintf(client_fd, "FAIL [-] 'secret_key.txt' still exists in 'sandbox/clutter/'!\n    Please move the key into the secure vault.\n");
         return;
     }
     FILE *f = safe_open_regular_read("/home/learner/sandbox/secure_vault/secret_key.txt");
     if (!f) {
+        usleep(300000);
         dprintf(client_fd, "FAIL [-] Key file 'sandbox/secure_vault/secret_key.txt' not found or invalid!\n    Locate the secret key amidst the clutter and move it into the vault.\n");
         return;
     }
@@ -254,8 +267,33 @@ static void handle_check_05(int client_fd) {
     fclose(f);
 
     if (!has_key) {
+        usleep(300000);
         dprintf(client_fd, "FAIL [-] Key file does not contain the authentic vault key!\n");
         return;
+    }
+
+    /* Verify that hazardous clutter debris and directories have been cleaned up */
+    struct stat st;
+    if (stat("/home/learner/sandbox/clutter", &st) == 0) {
+        DIR *d = opendir("/home/learner/sandbox/clutter");
+        if (d) {
+            struct dirent *dir;
+            int remaining_items = 0;
+            while ((dir = readdir(d)) != NULL) {
+                if (strcmp(dir->d_name, ".") != 0 && strcmp(dir->d_name, "..") != 0) {
+                    remaining_items++;
+                    break;
+                }
+            }
+            closedir(d);
+            if (remaining_items > 0) {
+                usleep(300000);
+                dprintf(client_fd,
+                    "FAIL [-] Hazardous clutter debris still remains in 'sandbox/clutter/'!\n"
+                    "    Use 'rm' to remove junk files and 'rmdir' to remove empty directories.\n");
+                return;
+            }
+        }
     }
 
     dprintf(client_fd, "OK %s\n", g_flag);
@@ -263,6 +301,7 @@ static void handle_check_05(int client_fd) {
 
 static void handle_check_06(int client_fd, const char *arg) {
     if (!arg || strlen(arg) == 0) {
+        usleep(300000);
         dprintf(client_fd, "FAIL [-] Authentication Error: Location parameter missing!\n    Usage: sec-beacon <FULL_BINARY_PATH>\n");
         return;
     }
@@ -273,6 +312,7 @@ static void handle_check_06(int client_fd, const char *arg) {
     char exp_path[256] = {0};
     FILE *fa = fopen(ANSWER_PATH, "r");
     if (!fa) {
+        usleep(300000);
         dprintf(client_fd, "FAIL [-] Beacon validation service error: answer key missing.\n");
         return;
     }
@@ -284,6 +324,7 @@ static void handle_check_06(int client_fd, const char *arg) {
     if (strlen(exp_path) > 0 && strcmp(clean_path, exp_path) == 0) {
         dprintf(client_fd, "OK %s\n", g_flag);
     } else {
+        usleep(300000);
         dprintf(client_fd,
             "FAIL [-] Authentication Failed: '%s' is NOT where this binary is installed!\n"
             "    Hint: Use 'which sec-beacon' to locate the binary on your PATH.\n",
@@ -297,6 +338,7 @@ static void handle_check_15(int client_fd, const char *arg) {
     trim(input_ip);
 
     if (strlen(input_ip) == 0) {
+        usleep(300000);
         dprintf(client_fd, "FAIL [-] Usage: report_attacker <ATTACKER_IP>\n");
         return;
     }
@@ -304,6 +346,7 @@ static void handle_check_15(int client_fd, const char *arg) {
     char exp_ip[128] = {0};
     FILE *fa = fopen(ANSWER_PATH, "r");
     if (!fa) {
+        usleep(300000);
         dprintf(client_fd, "FAIL [-] Validation service error: answer configuration missing.\n");
         return;
     }
@@ -313,6 +356,7 @@ static void handle_check_15(int client_fd, const char *arg) {
     fclose(fa);
 
     if (strlen(exp_ip) == 0) {
+        usleep(300000);
         dprintf(client_fd, "FAIL [-] Validation service error: empty answer configuration.\n");
         return;
     }
@@ -320,6 +364,7 @@ static void handle_check_15(int client_fd, const char *arg) {
     if (strcmp(input_ip, exp_ip) == 0) {
         dprintf(client_fd, "OK %s\n", g_flag);
     } else {
+        usleep(300000);
         dprintf(client_fd, "FAIL [-] Incorrect IP address: '%s'. Check your pipeline!\n", input_ip);
     }
 }

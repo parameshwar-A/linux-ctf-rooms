@@ -34,14 +34,11 @@ int main(int argc, char *argv[]) {
     if (fl) {
         for (int i = 1; i <= 1000; i++) {
             if (i == 500) {
-                fprintf(fl, "[SENSOR-500] CRITICAL PAYLOAD: %s\n", flag);
+                fprintf(fl, "[SENSOR-500] %s\n", flag);
             } else {
                 char d_tok[33];
                 ctf_rand_hex(d_tok, 16);
                 fprintf(fl, "[SENSOR-%03d] FLAG{l08_%s}\n", i, d_tok);
-                if (fd && i <= 30) {
-                    fprintf(fd, "FLAG{l08_%s}\n", d_tok);
-                }
             }
         }
         fclose(fl);

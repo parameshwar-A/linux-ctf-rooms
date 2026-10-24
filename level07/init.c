@@ -64,31 +64,32 @@ int main(int argc, char *argv[]) {
                 chmod(path, 0644);
             }
         } else {
-            /* Binary file with decoy stream */
-            if (i % 2 == 0) {
-                /* Gzip compressed data */
-                char tmp[256];
-                snprintf(tmp, sizeof(tmp), "/tmp/plain_%d.txt", i);
-                FILE *fp = fopen(tmp, "w");
-                if (fp) {
-                    fprintf(fp, "BINARY STREAM DUMP ... FLAG{l07_%s}\n", decoy_tokens[i]);
-                    fclose(fp);
-                    char cmd[512];
-                    snprintf(cmd, sizeof(cmd), "gzip -c %s > %s && rm -f %s", tmp, path, tmp);
-                    system(cmd);
-                    chmod(path, 0644);
+            /* Non-ASCII binary / extended data stream with decoy flag */
+            FILE *fb = fopen(path, "wb");
+            if (fb) {
+                unsigned char magic[8];
+                if (i == 0) {
+                    unsigned char h[] = {0x89, 0xFE, 0xED, 0xFA, 0xCE, 0xDE, 0xAD, 0xBE};
+                    memcpy(magic, h, 8);
+                } else if (i == 1) {
+                    unsigned char h[] = {0xFF, 0xFB, 0x90, 0x44, 0xBC, 0xDE, 0xF0, 0x12};
+                    memcpy(magic, h, 8);
+                } else if (i == 2) {
+                    unsigned char h[] = {0x80, 0x91, 0xA2, 0xB3, 0xC4, 0xD5, 0xE6, 0xF7};
+                    memcpy(magic, h, 8);
+                } else {
+                    unsigned char h[] = {0xEB, 0xFE, 0x90, 0x90, 0xCD, 0x19, 0xFA, 0xF4};
+                    memcpy(magic, h, 8);
                 }
-            } else {
-                /* Binary audio/raw bytes */
-                FILE *fb = fopen(path, "wb");
-                if (fb) {
-                    unsigned char dummy[] = {0xFF, 0xFB, 0x90, 0x44, 0x00, 0x12, 0x34, 0x56};
-                    fwrite(dummy, 1, sizeof(dummy), fb);
-                    for (int b = 0; b < 64; b++) fputc((b * 37) % 256, fb);
-                    fprintf(fb, "RAW_STREAM_FLAG{l07_%s}\x00\xFF", decoy_tokens[i]);
-                    fclose(fb);
-                    chmod(path, 0644);
+                fwrite(magic, 1, 8, fb);
+                fprintf(fb, "\n[SUSPECT EVIDENCE TELEMETRY DUMP]\n");
+                fprintf(fb, "FLAG{l07_%s}\n", decoy_tokens[i]);
+                for (int b = 0; b < 32; b++) {
+                    fputc(0x80 + (b * 13) % 120, fb);
                 }
+                fputc('\n', fb);
+                fclose(fb);
+                chmod(path, 0644);
             }
         }
     }

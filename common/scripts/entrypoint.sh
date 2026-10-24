@@ -21,11 +21,14 @@ fi
 
 # 3. If compiled init-room exists, run it as root to prepare the room layout & decoys
 if [ -x /usr/local/bin/init-room ]; then
+    chmod 0700 /usr/local/bin/init-room
     /usr/local/bin/init-room "$ACTUAL_FLAG" "${CTF_SALT:-}" "${CTF_HASH:-}"
+    chmod 0700 /usr/local/bin/init-room
 fi
 
 # 4. Start CTF check daemon as root (if installed)
 if [ -x /usr/local/bin/ctf-checkd ]; then
+    chmod 0700 /usr/local/bin/ctf-checkd
     /usr/local/bin/ctf-checkd &
     # Wait up to 2 seconds for socket to be ready
     for i in {1..20}; do

@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
         fprintf(fenv, "ROOM_ID=\"05\"\n");
         fprintf(fenv, "ROOM_TITLE=\"Excavation\"\n");
         fprintf(fenv, "ROOM_COMMANDS=\"mkdir, rm, rmdir\"\n");
-        fprintf(fenv, "ROOM_MISSION=\"The storage area 'sandbox/clutter' is full of junk. Locate 'sandbox/clutter/secret_*.txt' amidst the clutter, create the directory 'sandbox/secure_vault', and move the key into it. Run './verify_vault' to decrypt the vault and reveal the flag!\"\n");
+        fprintf(fenv, "ROOM_MISSION=\"The storage area 'sandbox/clutter' is full of junk. Create the directory 'sandbox/secure_vault', move 'sandbox/clutter/secret_key.txt' into it, and clean up all remaining debris and empty directories in 'sandbox/clutter' using 'rm' and 'rmdir'. Run './verify_vault' to reveal the flag!\"\n");
         fprintf(fenv, "ROOM_HINT=\"Use 'man -k <keyword>' for keyword based searches. Search man pages for keywords like directories / make / remove\"\n");
         fclose(fenv);
         chmod("/etc/linux_ctf_room.env", 0644);
@@ -62,7 +62,7 @@ int main(int argc, char *argv[]) {
         fprintf(fk, "=========================================================\n");
         fprintf(fk, "KEY_ID: VAULT-TOKEN-AUTHENTICATED\n");
         fprintf(fk, "STATUS: LOCKED_ENCRYPTED\n\n");
-        fprintf(fk, "NOTICE: Move this key into 'sandbox/secure_vault/' and run './verify_vault'.\n");
+        fprintf(fk, "NOTICE: Move this key into 'sandbox/secure_vault/', clean up remaining clutter, and run './verify_vault'.\n");
         fclose(fk);
         chmod("/home/learner/sandbox/clutter/secret_key.txt", 0644);
     }

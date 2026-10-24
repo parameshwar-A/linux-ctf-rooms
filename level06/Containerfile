@@ -1,8 +1,12 @@
 FROM linux-ctf-base:latest
 
 USER root
+COPY common/validator/clients/sec_beacon.c /tmp/sec_beacon.c
 COPY level06/init.c /tmp/init.c
-RUN gcc -O2 -s /tmp/init.c -o /usr/local/bin/init-room && rm -f /tmp/init.c
+RUN gcc -O2 -s /tmp/init.c -o /usr/local/bin/init-room \
+    && gcc -O2 -s /tmp/sec_beacon.c -o /usr/local/bin/sec-beacon \
+    && chmod 0755 /usr/local/bin/sec-beacon \
+    && rm -f /tmp/init.c /tmp/sec_beacon.c
 
 WORKDIR /home/learner
 CMD ["/bin/bash"]

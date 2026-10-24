@@ -6,6 +6,8 @@
 #include <sys/un.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/time.h>
+#include <signal.h>
 #include <ctype.h>
 
 #define SOCKET_PATH "/run/ctf.sock"
@@ -15,6 +17,36 @@
 
 static char g_flag[256] = {0};
 static char g_answer[256] = {0};
+static char g_current_room_id[16] = {0};
+
+static void safe_copy(char *dst, size_t dst_sz, const char *src) {
+    if (!dst || dst_sz == 0) return;
+    if (!src) { dst[0] = '\0'; return; }
+    size_t i = 0;
+    while (i + 1 < dst_sz && src[i] != '\0') {
+        dst[i] = src[i];
+        i++;
+    }
+    dst[i] = '\0';
+}
+
+static void load_current_room_id(void) {
+    FILE *f = fopen("/etc/linux_ctf_room.env", "r");
+    if (!f) return;
+    char line[256];
+    while (fgets(line, sizeof(line), f)) {
+        if (strncmp(line, "ROOM_ID=", 8) == 0) {
+            char *val = line + 8;
+            while (*val == ' ' || *val == '"' || *val == '\'') val++;
+            char *end = val;
+            while (*end && *end != '\n' && *end != '\r' && *end != '"' && *end != '\'') end++;
+            *end = '\0';
+            safe_copy(g_current_room_id, sizeof(g_current_room_id), val);
+            break;
+        }
+    }
+    fclose(f);
+}
 
 static void trim(char *s) {
     if (!s) return;
@@ -64,7 +96,7 @@ static int is_decoy(const char *input) {
 
 static void handle_submit(int client_fd, const char *arg) {
     char clean_flag[256] = {0};
-    strncpy(clean_flag, arg, sizeof(clean_flag) - 1);
+    safe_copy(clean_flag, sizeof(clean_flag), arg);
     trim(clean_flag);
 
     if (g_flag[0] == '\0') {
@@ -119,8 +151,8 @@ static void handle_check_03(int client_fd) {
         if (fgets(al1, sizeof(al1), fa) && fgets(al2, sizeof(al2), fa)) {
             trim(al1); trim(al2);
             if (strlen(al1) > 0 && strlen(al2) > 0) {
-                strncpy(exp1, al1, sizeof(exp1) - 1);
-                strncpy(exp2, al2, sizeof(exp2) - 1);
+                safe_copy(exp1, sizeof(exp1), al1);
+                safe_copy(exp2, sizeof(exp2), al2);
             }
         }
         fclose(fa);
@@ -129,8 +161,7 @@ static void handle_check_03(int client_fd) {
     if (strcmp(l1, exp1) == 0 && strcmp(l2, exp2) == 0) {
         dprintf(client_fd, "OK %s\n", g_flag);
     } else {
-        dprintf(client_fd, "FAIL [-] Verification failed!\n    Line 1 got: '%s' (expected '%s')\n    Line 2 got: '%s' (expected '%s')\n",
-            l1, exp1, l2, exp2);
+        dprintf(client_fd, "FAIL [-] Configuration verification failed! Please re-check the required keys in instructions.\n");
     }
 }
 
@@ -175,20 +206,21 @@ static void handle_check_06(int client_fd, const char *arg) {
         return;
     }
     char clean_path[256] = {0};
-    strncpy(clean_path, arg, sizeof(clean_path) - 1);
+    safe_copy(clean_path, sizeof(clean_path), arg);
     trim(clean_path);
 
-    char exp_path[256] = "/usr/local/bin/sec-beacon";
+    char exp_path[256] = {0};
     FILE *fa = fopen(ANSWER_PATH, "r");
-    if (fa) {
-        if (fgets(exp_path, sizeof(exp_path), fa)) {
-            trim(exp_path);
-        }
-        fclose(fa);
+    if (!fa) {
+        dprintf(client_fd, "FAIL [-] Beacon validation service error: answer key missing.\n");
+        return;
     }
+    if (fgets(exp_path, sizeof(exp_path), fa)) {
+        trim(exp_path);
+    }
+    fclose(fa);
 
-    if (strcmp(clean_path, exp_path) == 0 ||
-        (strcmp(exp_path, "/usr/local/bin/sec-beacon") == 0 && strcmp(clean_path, "/usr/local/bin") == 0)) {
+    if (strlen(exp_path) > 0 && strcmp(clean_path, exp_path) == 0) {
         dprintf(client_fd, "OK %s\n", g_flag);
     } else {
         dprintf(client_fd,
@@ -200,7 +232,7 @@ static void handle_check_06(int client_fd, const char *arg) {
 
 static void handle_check_15(int client_fd, const char *arg) {
     char input_ip[128] = {0};
-    if (arg) strncpy(input_ip, arg, sizeof(input_ip) - 1);
+    if (arg) safe_copy(input_ip, sizeof(input_ip), arg);
     trim(input_ip);
 
     if (strlen(input_ip) == 0) {
@@ -225,6 +257,8 @@ static void handle_check_15(int client_fd, const char *arg) {
 }
 
 int main(void) {
+    signal(SIGPIPE, SIG_IGN);
+    load_current_room_id();
     read_file_secret(FLAG_PATH, g_flag, sizeof(g_flag));
     read_file_secret(ANSWER_PATH, g_answer, sizeof(g_answer));
 
@@ -257,6 +291,11 @@ int main(void) {
         int client_fd = accept(s, NULL, NULL);
         if (client_fd < 0) continue;
 
+        /* Set 2-second receive and send timeouts to prevent blocking DoS */
+        struct timeval tv = {.tv_sec = 2, .tv_usec = 0};
+        setsockopt(client_fd, SOL_SOCKET, SO_RCVTIMEO, (const char *)&tv, sizeof(tv));
+        setsockopt(client_fd, SOL_SOCKET, SO_SNDTIMEO, (const char *)&tv, sizeof(tv));
+
         char buf[512] = {0};
         ssize_t n = read(client_fd, buf, sizeof(buf) - 1);
         if (n > 0) {
@@ -266,19 +305,39 @@ int main(void) {
             if (strncmp(buf, "SUBMIT ", 7) == 0) {
                 handle_submit(client_fd, buf + 7);
             } else if (strncmp(buf, "CHECK 03", 8) == 0) {
-                handle_check_03(client_fd);
+                if (strcmp(g_current_room_id, "03") != 0) {
+                    dprintf(client_fd, "FAIL [-] Command not valid for Room %s\n", g_current_room_id[0] ? g_current_room_id : "unknown");
+                } else {
+                    handle_check_03(client_fd);
+                }
             } else if (strncmp(buf, "CHECK 04", 8) == 0) {
-                handle_check_04(client_fd);
+                if (strcmp(g_current_room_id, "04") != 0) {
+                    dprintf(client_fd, "FAIL [-] Command not valid for Room %s\n", g_current_room_id[0] ? g_current_room_id : "unknown");
+                } else {
+                    handle_check_04(client_fd);
+                }
             } else if (strncmp(buf, "CHECK 05", 8) == 0) {
-                handle_check_05(client_fd);
+                if (strcmp(g_current_room_id, "05") != 0) {
+                    dprintf(client_fd, "FAIL [-] Command not valid for Room %s\n", g_current_room_id[0] ? g_current_room_id : "unknown");
+                } else {
+                    handle_check_05(client_fd);
+                }
             } else if (strncmp(buf, "CHECK 06", 8) == 0) {
-                char *arg = buf + 8;
-                while (*arg == ' ') arg++;
-                handle_check_06(client_fd, arg);
+                if (strcmp(g_current_room_id, "06") != 0) {
+                    dprintf(client_fd, "FAIL [-] Command not valid for Room %s\n", g_current_room_id[0] ? g_current_room_id : "unknown");
+                } else {
+                    char *arg = buf + 8;
+                    while (*arg == ' ') arg++;
+                    handle_check_06(client_fd, arg);
+                }
             } else if (strncmp(buf, "CHECK 15", 8) == 0) {
-                char *arg = buf + 8;
-                while (*arg == ' ') arg++;
-                handle_check_15(client_fd, arg);
+                if (strcmp(g_current_room_id, "15") != 0) {
+                    dprintf(client_fd, "FAIL [-] Command not valid for Room %s\n", g_current_room_id[0] ? g_current_room_id : "unknown");
+                } else {
+                    char *arg = buf + 8;
+                    while (*arg == ' ') arg++;
+                    handle_check_15(client_fd, arg);
+                }
             } else {
                 dprintf(client_fd, "FAIL Unknown command\n");
             }

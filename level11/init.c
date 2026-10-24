@@ -5,6 +5,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <string.h>
+#include <ctf_rand.h>
 
 static void rot13(const char *in, char *out) {
     while (*in) {
@@ -36,10 +37,16 @@ int main(int argc, char *argv[]) {
         chmod("/etc/linux_ctf_room.env", 0644);
     }
 
+    /* Generate 32-hex decoy */
+    char d_tok[33];
+    ctf_rand_hex(d_tok, 16);
+    char decoy[128];
+    snprintf(decoy, sizeof(decoy), "FLAG{l11_%s}", d_tok);
+
     /* Record decoy */
     FILE *fdec = fopen("/run/ctf/decoys", "w");
     if (fdec) {
-        fprintf(fdec, "FLAG{l11_decoy_radio_transmission_ch2}\n");
+        fprintf(fdec, "%s\n", decoy);
         fclose(fdec);
     }
 
@@ -48,11 +55,11 @@ int main(int argc, char *argv[]) {
     snprintf(full_plain, sizeof(full_plain),
         "TRANSMISSION INTERCEPT CH-1:\n"
         "STATUS: NOISE_BURST\n"
-        "MESSAGE: FLAG{l11_decoy_radio_transmission_ch2}\n\n"
+        "MESSAGE: %s\n\n"
         "TRANSMISSION INTERCEPT CH-2:\n"
         "AUTHENTICATED PAYLOAD RECOVERY:\n"
         "The authorization code has been encrypted with ROT13.\n"
-        "Plaintext token: %s\n", flag);
+        "Plaintext token: %s\n", decoy, flag);
 
     char full_enc[4096];
     rot13(full_plain, full_enc);

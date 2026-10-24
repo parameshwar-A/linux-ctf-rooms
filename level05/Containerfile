@@ -1,8 +1,12 @@
 FROM linux-ctf-base:latest
 
 USER root
+COPY common/validator/clients/verify_vault.c /tmp/verify_vault.c
 COPY level05/init.c /tmp/init.c
-RUN gcc -O2 -s /tmp/init.c -o /usr/local/bin/init-room && rm -f /tmp/init.c
+RUN gcc -O2 -s /tmp/init.c -o /usr/local/bin/init-room \
+    && gcc -O2 -s /tmp/verify_vault.c -o /usr/local/bin/verify_vault \
+    && chmod 0711 /usr/local/bin/verify_vault \
+    && rm -f /tmp/init.c /tmp/verify_vault.c
 
 WORKDIR /home/learner
 CMD ["/bin/bash"]

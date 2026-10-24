@@ -7,16 +7,21 @@ install -d -m 0700 /run/ctf
 
 # 2. Extract flag from secret mount or environment
 FLAG_FILE=/run/secrets/ctf_flag
+ACTUAL_FLAG=""
 if [ -f "$FLAG_FILE" ]; then
     install -m 0600 "$FLAG_FILE" /run/ctf/flag
+    ACTUAL_FLAG="$(cat /run/ctf/flag)"
 elif [ -n "${CTF_FLAG:-}" ]; then
     echo -n "$CTF_FLAG" > /run/ctf/flag
     chmod 0600 /run/ctf/flag
+    ACTUAL_FLAG="$CTF_FLAG"
+elif [ -f /run/ctf/flag ]; then
+    ACTUAL_FLAG="$(cat /run/ctf/flag)"
 fi
 
 # 3. If compiled init-room exists, run it as root to prepare the room layout & decoys
 if [ -x /usr/local/bin/init-room ]; then
-    /usr/local/bin/init-room "${CTF_FLAG:-}" "${CTF_SALT:-}" "${CTF_HASH:-}"
+    /usr/local/bin/init-room "$ACTUAL_FLAG" "${CTF_SALT:-}" "${CTF_HASH:-}"
 fi
 
 # 4. Start CTF check daemon as root (if installed)
@@ -42,7 +47,7 @@ if [ -d /home/learner ]; then
 fi
 
 # 6. Wipe sensitive variables from root's environment
-unset CTF_FLAG CTF_SALT CTF_HASH
+unset ACTUAL_FLAG CTF_FLAG CTF_SALT CTF_HASH
 
 cd /home/learner
 

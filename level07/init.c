@@ -32,12 +32,18 @@ int main(int argc, char *argv[]) {
     const char *filenames[] = {"photo.png", "audio.mp3", "manual.pdf", "backup.tar", "firmware.bin"};
     int target_idx = ctf_rand(5);
 
+    /* Generate 32-hex random decoy tokens */
+    char decoy_tokens[5][33];
+    for (int i = 0; i < 5; i++) {
+        ctf_rand_hex(decoy_tokens[i], 16);
+    }
+
     /* Record decoys in /run/ctf/decoys */
     FILE *fd = fopen("/run/ctf/decoys", "w");
     if (fd) {
         for (int i = 0; i < 5; i++) {
             if (i != target_idx) {
-                fprintf(fd, "FLAG{l07_decoy_suspect_%d}\n", i + 1);
+                fprintf(fd, "FLAG{l07_%s}\n", decoy_tokens[i]);
             }
         }
         fclose(fd);
@@ -65,7 +71,7 @@ int main(int argc, char *argv[]) {
                 snprintf(tmp, sizeof(tmp), "/tmp/plain_%d.txt", i);
                 FILE *fp = fopen(tmp, "w");
                 if (fp) {
-                    fprintf(fp, "BINARY STREAM DUMP ... FLAG{l07_decoy_suspect_%d}\n", i + 1);
+                    fprintf(fp, "BINARY STREAM DUMP ... FLAG{l07_%s}\n", decoy_tokens[i]);
                     fclose(fp);
                     char cmd[512];
                     snprintf(cmd, sizeof(cmd), "gzip -c %s > %s && rm -f %s", tmp, path, tmp);
@@ -79,7 +85,7 @@ int main(int argc, char *argv[]) {
                     unsigned char dummy[] = {0xFF, 0xFB, 0x90, 0x44, 0x00, 0x12, 0x34, 0x56};
                     fwrite(dummy, 1, sizeof(dummy), fb);
                     for (int b = 0; b < 64; b++) fputc((b * 37) % 256, fb);
-                    fprintf(fb, "RAW_STREAM_FLAG{l07_decoy_suspect_%d}\x00\xFF", i + 1);
+                    fprintf(fb, "RAW_STREAM_FLAG{l07_%s}\x00\xFF", decoy_tokens[i]);
                     fclose(fb);
                     chmod(path, 0644);
                 }

@@ -1,8 +1,12 @@
 FROM linux-ctf-base:latest
 
 USER root
+COPY common/validator/clients/verify_dispatch.c /tmp/verify_dispatch.c
 COPY level03/init.c /tmp/init.c
-RUN gcc -O2 -s /tmp/init.c -o /usr/local/bin/init-room && rm -f /tmp/init.c
+RUN gcc -O2 -s /tmp/init.c -o /usr/local/bin/init-room \
+    && gcc -O2 -s /tmp/verify_dispatch.c -o /usr/local/bin/verify_dispatch \
+    && chmod 0711 /usr/local/bin/verify_dispatch \
+    && rm -f /tmp/init.c /tmp/verify_dispatch.c
 
 WORKDIR /home/learner
 CMD ["/bin/bash"]

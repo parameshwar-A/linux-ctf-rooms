@@ -26,19 +26,13 @@ int main(int argc, char *argv[]) {
         chmod("/etc/linux_ctf_room.env", 0644);
     }
 
-    /* 2. Setup transaction hashes log with flag-shaped duplicates */
-    const char *decoys[] = {
-        "FLAG{l10_tx_hash_8f1a990b23de}",
-        "FLAG{l10_tx_hash_44b2c819f901}",
-        "FLAG{l10_tx_hash_91c3e8a02102}",
-        "FLAG{l10_tx_hash_50a1f78d321a}",
-        "FLAG{l10_tx_hash_b819e02f7c33}",
-        "FLAG{l10_tx_hash_33a9d104e9f2}",
-        "FLAG{l10_tx_hash_77e1a29d4411}",
-        "FLAG{l10_tx_hash_1209b8cf1904}",
-        "FLAG{l10_tx_hash_f19920a38b71}",
-        "FLAG{l10_tx_hash_aa81920f3e44}"
-    };
+    /* 2. Setup transaction hashes log with 32-hex flag duplicates */
+    char decoys[10][64];
+    for (int d = 0; d < 10; d++) {
+        char h[33];
+        ctf_rand_hex(h, 16);
+        snprintf(decoys[d], sizeof(decoys[d]), "FLAG{l10_%s}", h);
+    }
 
     FILE *fdec = fopen("/run/ctf/decoys", "w");
     if (fdec) {

@@ -46,8 +46,10 @@ int main(int argc, char *argv[]) {
                 if (i == target_srv && j == target_line) {
                     fprintf(fp, "[2026-10-14 14:02:11] [ERROR] [ERR_LEAK_9918] Authentication token leaked: %s\n", flag);
                 } else if (j == 12 || j == 38) {
+                    char d_tok[33];
+                    ctf_rand_hex(d_tok, 16);
                     char decoy[128];
-                    snprintf(decoy, sizeof(decoy), "FLAG{l12_decoy_err_leak_noise_srv%02d_j%02d}", i, j);
+                    snprintf(decoy, sizeof(decoy), "FLAG{l12_%s}", d_tok);
                     fprintf(fp, "[2026-10-14 14:01:%02d] [WARN] [ERR_NOISE_%04d] Leaked session candidate: %s\n",
                         j % 60, (i * 100 + j), decoy);
                     if (fdec) fprintf(fdec, "%s\n", decoy);

@@ -1,8 +1,12 @@
 FROM linux-ctf-base:latest
 
 USER root
+COPY common/validator/clients/check_production.c /tmp/check_production.c
 COPY level04/init.c /tmp/init.c
-RUN gcc -O2 -s /tmp/init.c -o /usr/local/bin/init-room && rm -f /tmp/init.c
+RUN gcc -O2 -s /tmp/init.c -o /usr/local/bin/init-room \
+    && gcc -O2 -s /tmp/check_production.c -o /usr/local/bin/check_production \
+    && chmod 0711 /usr/local/bin/check_production \
+    && rm -f /tmp/init.c /tmp/check_production.c
 
 WORKDIR /home/learner
 CMD ["/bin/bash"]

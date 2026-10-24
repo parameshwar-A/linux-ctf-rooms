@@ -24,6 +24,7 @@ static inline void ctf_rand_hex(char *out, size_t num_bytes) {
     for (size_t i = 0; i < num_bytes; i++) {
         sprintf(out + (i * 2), "%02x", buf[i]);
     }
+    out[num_bytes * 2] = '\0';
 }
 
 static inline void ctf_rand_ip(char *out, size_t len) {

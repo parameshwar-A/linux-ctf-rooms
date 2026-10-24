@@ -46,8 +46,10 @@ int main(int argc, char *argv[]) {
             if (idx == target_idx) {
                 fprintf(fp, "[DEBRIEF CONCLUSION] AUTHENTICATED KEY: %s\n", flag);
             } else {
+                char decoy_tok[33];
+                ctf_rand_hex(decoy_tok, 16);
                 char decoy[128];
-                snprintf(decoy, sizeof(decoy), "FLAG{l09_decoy_report_%02d_lines_%02d}", idx + 1, target_lines);
+                snprintf(decoy, sizeof(decoy), "FLAG{l09_%s}", decoy_tok);
                 fprintf(fp, "[DEBRIEF CONCLUSION] AUTHENTICATED KEY: %s\n", decoy);
                 if (fd) fprintf(fd, "%s\n", decoy);
             }

@@ -5,6 +5,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <string.h>
+#include <ctf_rand.h>
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
@@ -27,27 +28,26 @@ int main(int argc, char *argv[]) {
 
     /* Record sample decoys in /run/ctf/decoys */
     FILE *fd = fopen("/run/ctf/decoys", "w");
-    if (fd) {
-        for (int i = 1; i <= 20; i++) {
-            fprintf(fd, "FLAG{l08_decoy_telemetry_%04d}\n", (i * 91) % 10000);
-        }
-        fclose(fd);
-    }
 
-    /* 2. Setup 1,000 line telemetry log with decoys on every line */
+    /* 2. Setup 1,000 line telemetry log with 32-hex flag decoys on every line */
     FILE *fl = fopen("/home/learner/sensor_stream.log", "w");
     if (fl) {
         for (int i = 1; i <= 1000; i++) {
             if (i == 500) {
                 fprintf(fl, "[SENSOR-500] CRITICAL PAYLOAD: %s\n", flag);
             } else {
-                fprintf(fl, "[SENSOR-%03d] FLAG{l08_decoy_telemetry_%04d}\n",
-                    i, (i * 91) % 10000);
+                char d_tok[33];
+                ctf_rand_hex(d_tok, 16);
+                fprintf(fl, "[SENSOR-%03d] FLAG{l08_%s}\n", i, d_tok);
+                if (fd && i <= 30) {
+                    fprintf(fd, "FLAG{l08_%s}\n", d_tok);
+                }
             }
         }
         fclose(fl);
         chmod("/home/learner/sensor_stream.log", 0644);
     }
+    if (fd) fclose(fd);
 
     return 0;
 }

@@ -50,12 +50,18 @@ int main(int argc, char *argv[]) {
 
     int target_idx = ctf_rand(4);
 
+    /* Generate 32-hex random decoy tokens */
+    char decoy_tokens[4][33];
+    for (int i = 0; i < 4; i++) {
+        ctf_rand_hex(decoy_tokens[i], 16);
+    }
+
     /* Record decoys in /run/ctf/decoys */
     FILE *fdec = fopen("/run/ctf/decoys", "w");
     if (fdec) {
         for (int i = 0; i < 4; i++) {
             if (i != target_idx) {
-                fprintf(fdec, "FLAG{l13_decoy_k%d}\n", i + 1);
+                fprintf(fdec, "FLAG{l13_%s}\n", decoy_tokens[i]);
             }
         }
         fclose(fdec);
@@ -71,8 +77,8 @@ int main(int argc, char *argv[]) {
                 fprintf(fk, "=====================================================\n");
                 fprintf(fk, "AUTHORIZED CREDENTIAL: %s\n", flag);
             } else {
-                /* Small decoy key: size strictly under 50 bytes */
-                fprintf(fk, "FLAG{l13_decoy_k%d}\n", i + 1);
+                /* Small decoy key: size strictly under 50 bytes (43 bytes) */
+                fprintf(fk, "FLAG{l13_%s}\n", decoy_tokens[i]);
             }
             fclose(fk);
             chmod(paths[i], 0644);
